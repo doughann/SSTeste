@@ -1,0 +1,47 @@
+EXTENSION	SETTING	NUMBER	SUB-SETTING	SUB-NUMBER	SUB-SUB-SETTING	VALUE
+restrict_shipping	autocomplete_preloading					1
+restrict_shipping	autosave					1
+restrict_shipping	display					expanded
+restrict_shipping	distance_units					km
+restrict_shipping	product_group	1	name			
+restrict_shipping	product_group	1	sort_order			
+restrict_shipping	restriction	1	methods			flat3
+restrict_shipping	restriction	1	name			Quinta-feira
+restrict_shipping	restriction	1	rule	1	comparison	is
+restrict_shipping	restriction	1	rule	1	type	postcode
+restrict_shipping	restriction	1	rule	1	value	4442200-4443499,4700300-4701999,4710000-4710899
+restrict_shipping	restriction	1	rule	2	comparison	
+restrict_shipping	restriction	1	rule	2	type	rule_set
+restrict_shipping	restriction	1	rule	2	value	1
+restrict_shipping	restriction	2	methods			flat1
+restrict_shipping	restriction	2	name			Segunda e Sexta-feira
+restrict_shipping	restriction	2	rule	1	comparison	is
+restrict_shipping	restriction	2	rule	1	type	postcode
+restrict_shipping	restriction	2	rule	1	value	4441300-4441399,4440300-4440899,4450000-4450999,4750000-4750999,4470000-4470899,4720000-4720099,4460000-4460099,4441100-4441299
+restrict_shipping	restriction	2	rule	2	comparison	
+restrict_shipping	restriction	2	rule	2	type	rule_set
+restrict_shipping	restriction	2	rule	2	value	1
+restrict_shipping	restriction	3	methods			flat2
+restrict_shipping	restriction	3	name			Terça-feira
+restrict_shipping	restriction	3	rule	1	comparison	is
+restrict_shipping	restriction	3	rule	1	type	postcode
+restrict_shipping	restriction	3	rule	1	value	4443500-4443599,4430000-4430199,4440116,4440124,4440113,4440123,4440126,4440112,4440111,4440102,4440122,4440101,4440121,4440128,4440115,4440103,4440125,4440104,4440127,4440114 
+restrict_shipping	restriction	3	rule	2	comparison	
+restrict_shipping	restriction	3	rule	2	type	rule_set
+restrict_shipping	restriction	3	rule	2	value	1
+restrict_shipping	restriction	4	methods			flat4
+restrict_shipping	restriction	4	name			Segunda à Sexta-feira
+restrict_shipping	restriction	4	rule	1	comparison	is
+restrict_shipping	restriction	4	rule	1	type	postcode
+restrict_shipping	restriction	4	rule	1	value	4440000-4440099,4440200-4440299,4440900-4440999,4441400-4442199,4443600-4449999
+restrict_shipping	restriction	4	rule	2	comparison	
+restrict_shipping	restriction	4	rule	2	type	rule_set
+restrict_shipping	restriction	4	rule	2	value	1
+restrict_shipping	rule_set	1	name			fora de area
+restrict_shipping	rule_set	1	rule	1	comparison	not
+restrict_shipping	rule_set	1	rule	1	type	postcode
+restrict_shipping	rule_set	1	rule	1	value	NAGOYA, 4640000-4640871,4610000-4610049,4620000-4620869,4510000-4510084,4516001-4516090,4520801-4520848,4500001-4506290,4530000-4530872,4600000-4660858,4670000-4670879,4560000-4560078,4540000-4540997,4550000-4550887,4570000-4570866,4630000-4630815,4580000-4580927,4598001-4598016,4650000-4650097,4680000-4680836,4810000-4810046, Toyohashi-shi,4400001-4400897,4410000-4418157, Ichinomiya-shi,4910000-4910938,4930001-4938003,4940001-4940019, Kasugai-shi,4800301-4800306,4860000-4860969,4870001-4870035, Aisai-shi,4960000-4968049, Ama-shi,4901201,4901207,4901225,4901205,4901204,4901206,4901116,4901101,4901102,4901111,4901112,4901221,4901222,4901203,4901214,4901212,4901107,4901223,4901226,4901113,4901105,4901104,4901213,4901103,4901115,4901114,4901211,4970003,4970005,4970004,4970013,4970015,4970001,4970012,4970006,4970014,4970016,4970002,4970011,4901106,4901224,4901202, Chita-shi,4780000-4780069, Inazawa-shi,4901301-4901323,4920000-4928468,4950001-4950037, Inuyama-shi,4840000-4840966, Iwakura-shi,4820000-4820046, Kariya-shi,4480000-4480862, Kitanagoya-shi,4810000-4810046, Kiyosu-shi,4520000-4520963, Komaki-shi,4850000-4850832, Konan-shi,4830000-4838433, Miyoshi-shi,4440515,4700200-4700233, Nagakute-shi,4801100-4801347, Nisshin-shi,4700100-4700136, Obu-shi,4850044,4740000-4740074, Owariasahi-shi,4880000-4880884, Seto-shi,4801201-4890989, Shinshiro-shi,4411300-4411956, Tahara-shi,4413400-4413627, Tokai-shi,4760000-4770037, Tokoname-shi,4790000-4790882, Toyokawa-shi,4410101-4411231,4420000-4420889, Toyoake-shi,4701100-4701168, Tsushima-shi,4960000-4960877, Yatomi-shi,4901401-4980069, Aichi-gun,4700100-4700166, Ama-gun,4901100-4901145,4970000-4970058,4901400-4901447, Chita-gun,4702200-4702414,4703200-4703236,4702300-4702556, Kitashitara-gun,4412221-4314121,4490400-4490405, Nishikasugai-gun,4800200-4800202, Niwa-gun,4800100-4800151,4800100-4800107,
+restrict_shipping	rule_set	1	sort_order			1
+restrict_shipping	status					1
+restrict_shipping	testing_mode					0
+restrict_shipping	tooltips					0

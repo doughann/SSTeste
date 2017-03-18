@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<id>Journal2 Blog</id>
+	<version>1.5.x</version>
+	<vqmver required="true">2.4.0</vqmver>
+	<author>digital-atelier.com</author>
+
+    <file path="catalog/controller/feed/google_sitemap.php">
+        <operation error="log">
+            <search position="before"><![CDATA[$output .= '</urlset>';]]></search>
+            <add><![CDATA[
+            $this->load->model('journal2/blog');
+
+            foreach ($this->model_journal2_blog->getPosts() as $post) {
+                $output .= '<url>';
+                $output .= '<loc>' . $this->url->link('journal2/blog/post', 'journal_blog_post_id=' . $post['post_id']) . '</loc>';
+                $output .= '<changefreq>weekly</changefreq>';
+                $output .= '<priority>1</priority>';
+                $output .= '</url>';
+            }
+
+			foreach ($this->model_journal2_blog->getCategories() as $category) {
+				$output .= '<url>';
+				$output .= '<loc>' . $this->url->link('journal2/blog', 'journal_blog_category_id=' . $category['category_id']) . '</loc>';
+				$output .= '<changefreq>weekly</changefreq>';
+				$output .= '<priority>1</priority>';
+				$output .= '</url>';
+			}
+            ]]></add>
+        </operation>
+    </file>
+	
+	<file path="catalog/controller/common/" name="seo_url.php">
+        <operation error="log">
+            <search position="before" index="1"><![CDATA[if ($query->num_rows) {]]></search>
+            <add><![CDATA[
+                if ($part && !$query->num_rows) {
+                    $sql = "
+                        SELECT CONCAT('journal_blog_category_id=', category_id) as query FROM " . DB_PREFIX . "journal2_blog_category_description
+                        WHERE keyword = '" . $this->db->escape($part) . "'
+                        UNION
+                        SELECT CONCAT('journal_blog_post_id=', post_id) as query FROM " . DB_PREFIX . "journal2_blog_post_description
+                        WHERE keyword = '" . $this->db->escape($part) . "'
+                    ";
+                    $query = $this->db->query($sql);
+                }
+
+                if (!$query->num_rows) {
+                    $this->load->model('journal2/blog');
+                    $journal_blog_keywords = $this->model_journal2_blog->getBlogKeywords();
+
+                    if($this->request->get['_route_'] && is_array($journal_blog_keywords) && (in_array($this->request->get['_route_'], $journal_blog_keywords))) {
+                        $this->request->get['route'] = 'journal2/blog';
+                        continue;
+                    }
+                }
+            ]]></add>
+        </operation>
+
+        <operation error="log">
+            <search position="before"><![CDATA[if ($url[0] == 'product_id') {]]></search>
+            <add><![CDATA[
+                if ($url[0] == 'journal_blog_post_id') {
+                    $this->request->get['journal_blog_post_id'] = $url[1];
+                }
+
+                if ($url[0] == 'journal_blog_category_id') {
+                    $this->request->get['journal_blog_category_id'] = $url[1];
+                    }
+            ]]></add>
+        </operation>
+
+        <operation error="log">
+            <search position="before"><![CDATA[} elseif (isset($this->request->get['path'])) {]]></search>
+            <add><![CDATA[
+                } elseif (isset($this->request->get['journal_blog_post_id'])) {
+                    $this->request->get['route'] = 'journal2/blog/post';
+                } elseif (isset($this->request->get['journal_blog_category_id'])) {
+                    $this->request->get['route'] = 'journal2/blog';
+            ]]></add>
+        </operation>
+
+        <operation error="log">
+            <search position="after"><![CDATA[public function rewrite($link) {]]></search>
+            <add><![CDATA[
+                $this->load->model('journal2/blog');
+                $is_journal2_blog = false;
+            ]]></add>
+        </operation>
+
+        <operation error="log">
+            <search position="before"><![CDATA[$key == 'path']]></search>
+            <add><![CDATA[
+                } elseif ($key == 'journal_blog_post_id') {
+                    $is_journal2_blog = true;
+                    if ($journal_blog_keyword = $this->model_journal2_blog->rewritePost($value)) {
+                        $url .= '/' . $journal_blog_keyword;
+                        unset($data[$key]);
+                    }
+                } elseif ($key == 'journal_blog_category_id') {
+                    $is_journal2_blog = true;
+                    if ($journal_blog_keyword = $this->model_journal2_blog->rewriteCategory($value)) {
+                        $url .= '/' . $journal_blog_keyword;
+                        unset($data[$key]);
+                    }
+                } elseif (isset($data['route']) && $data['route'] == 'journal2/blog') {
+                    if (!isset($data['journal_blog_post_id']) && !isset($data['journal_blog_category_id'])) {
+                        $is_journal2_blog = true;
+                    }
+            ]]></add>
+        </operation>
+
+        <operation error="log">
+            <search position="before"><![CDATA[if ($url) {]]></search>
+            <add><![CDATA[
+            if ($is_journal2_blog && $this->model_journal2_blog->getBlogKeyword()) {
+                $url = '/' . $this->model_journal2_blog->getBlogKeyword() . $url;
+            }]]></add>
+        </operation>
+	</file>
+
+    <file path="catalog/controller/common/" name="column_left.php,column_right.php,content_top.php,content_bottom.php">
+        <operation error="log">
+            <search position="after"><![CDATA[$layout_id = 0;]]></search>
+            <add><![CDATA[
+                $this->load->model('journal2/blog');
+
+                if ($route == 'journal2/blog' && isset($this->request->get['journal_blog_category_id'])) {
+			        $layout_id = $this->model_journal2_blog->getBlogCategoryLayoutId($this->request->get['journal_blog_category_id']);
+		        }
+
+		        if ($route == 'journal2/blog/post' && isset($this->request->get['journal_blog_post_id'])) {
+			        $layout_id = $this->model_journal2_blog->getBlogPostLayoutId($this->request->get['journal_blog_post_id']);
+		        }
+            ]]></add>
+        </operation>
+    </file>
+
+</modification>

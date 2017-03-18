@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<id>Journal2 Newsletter</id>
+	<version>1.5.x</version>
+	<vqmver required="true">2.4.0</vqmver>
+	<author>digital-atelier.com</author>
+	
+	<file path="admin/controller/sale/" name="contact.php">
+		<operation error="log">
+			<search position="after"><![CDATA[$this->load->model('sale/customer');]]></search>
+			<add><![CDATA[$this->load->model('journal2/newsletter');]]></add>
+		</operation>
+
+        <operation error="log">
+            <search position="replace" index="1"><![CDATA[$email_total = $this->model_sale_customer->getTotalCustomers($customer_data);]]></search>
+            <add><![CDATA[$email_total = $this->model_journal2_newsletter->getTotalSubscribers();]]></add>
+        </operation>
+
+        <operation error="log">
+            <search position="replace" index="1"><![CDATA[$results = $this->model_sale_customer->getCustomers($customer_data);]]></search>
+            <add><![CDATA[$results = $this->model_journal2_newsletter->getSubscribers($customer_data);]]></add>
+        </operation>
+	</file>
+</modification>
+

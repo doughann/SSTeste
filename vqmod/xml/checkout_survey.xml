@@ -1,0 +1,68 @@
+<modification>
+	
+	<id>Checkout Survey</id>
+	<version>155.1</version>
+	<vqmver>2.3.2</vqmver>
+	<author>Clear Thinking</author>
+	<email>johnathan@getclearthinking.com</email>
+	<website>http://www.getclearthinking.com</website>
+	
+	<!-- All versions -->
+	<file name="*/view/template/common/header.tpl" error="skip">
+		<operation error="skip">
+			<search position="after" offset="1"><![CDATA[
+				<li id="reports"><a class="top"><?php echo $text_reports; ?></a>
+			]]></search>
+			<add trim="true"><![CDATA[
+				<li><a href="<?php echo HTTPS_SERVER . 'index.php?route=report/checkout_survey&token=' . $this->session->data['token']; ?>">Checkout Survey</a></li>
+			]]></add>
+		</operation>
+	</file>
+	<file name="catalog/view/theme/*/template/checkout/cart.tpl" error="skip">
+		<operation error="skip">
+			<search position="before"><![CDATA[
+				<div class="buttons">
+			]]></search>
+			<add trim="true"><![CDATA[
+				<?php include_once(DIR_APPLICATION . 'view/theme/default/template/total/checkout_survey.tpl'); ?>
+			]]></add>
+		</operation>
+	</file>
+	
+	<!-- v1.5.2+ -->
+	<file name="catalog/view/theme/*/template/checkout/payment_method.tpl" error="skip">
+		<operation error="skip">
+			<search position="before"><![CDATA[
+				<div class="buttons">
+			]]></search>
+			<add trim="true"><![CDATA[
+				<?php include_once(DIR_APPLICATION . 'view/theme/default/template/total/checkout_survey.tpl'); ?>
+			]]></add>
+		</operation>
+	</file>
+	
+	<!-- v1.4.x - v1.5.1 -->
+	<file name="catalog/view/theme/*/template/checkout/payment.tpl" error="skip">
+		<operation error="skip">
+			<search position="before"><![CDATA[
+				<div class="buttons">
+			]]></search>
+			<add trim="true"><![CDATA[
+				<?php include_once(DIR_APPLICATION . 'view/theme/default/template/total/checkout_survey.tpl'); ?>
+			]]></add>
+		</operation>
+	</file>
+	
+	<!-- v1.4.x only -->
+	<file name="catalog/view/theme/*/template/checkout/guest_step_2.tpl" error="skip">
+		<operation error="skip">
+			<search position="before"><![CDATA[
+				<div class="buttons">
+			]]></search>
+			<add trim="true"><![CDATA[
+				<?php include_once(DIR_APPLICATION . 'view/theme/default/template/total/checkout_survey.tpl'); ?>
+			]]></add>
+		</operation>
+	</file>
+	
+</modification>

@@ -1,0 +1,79 @@
+<modification>
+
+	<id>Retirar Capcha</id>
+	<version>1.0.0</version>
+	<vqmver>2.1.5</vqmver>
+	<author>Jeann - email: jeann@surgimento.com.br - twitter: @surgimento - http://www.surgimento.com.br alterado 03/04/2012</author>
+
+	<file name="catalog/controller/information/contact.php">	 
+
+		<operation error="skip"><!-- linha 188 geral -->
+            <search position="replace" offset="2"><![CDATA[
+				if (empty($this->session->data['captcha']) || ($this->session->data['captcha'] != $this->request->post['captcha'])) {
+			]]></search>
+            <add><![CDATA[ 
+			// retira capcha retira_capcha.xml
+			]]></add>
+        </operation>	
+	</file>
+	
+	<file name="catalog/view/theme/*/template/information/contact.tpl">	 
+		<operation error="skip"><!-- linha 52 geral -->
+            <search position="replace" offset="6"><![CDATA[
+			<b><?php echo $entry_captcha; ?></b><br />
+			]]></search>
+            <add><![CDATA[ 
+				<?php // retira capcha retira_capcha.xml ?>
+			]]></add>
+        </operation>		
+	</file>
+	
+	
+	<file name="catalog/controller/account/return.php">	 
+		<operation error="skip"><!-- linha 625 geral -->
+            <search position="replace" offset="2"><![CDATA[
+				if (empty($this->session->data['captcha']) || ($this->session->data['captcha'] != $this->request->post['captcha'])) {
+			]]></search>
+            <add><![CDATA[ 
+			// retira capcha retira_capcha.xml
+			]]></add>
+        </operation>	
+	</file>
+	
+	
+	<file name="catalog/view/theme/*/template/account/return_form.tpl">	 
+		<operation error="skip"><!-- linha 130 geral -->
+            <search position="replace" offset="7"><![CDATA[
+			<div class="return-captcha"><b><?php echo $entry_captcha; ?></b><br />
+			]]></search>
+            <add><![CDATA[ 
+				<?php // retira capcha retira_capcha.xml ?>
+			]]></add>
+        </operation>		
+	</file>
+	
+	
+	
+	<file name="catalog/controller/product/product.php">	 
+		<operation error="skip"><!-- linha 502 geral -->
+            <search position="replace" offset="2"><![CDATA[
+				if (empty($this->session->data['captcha']) || ($this->session->data['captcha'] != $this->request->post['captcha'])) {
+			]]></search>
+            <add><![CDATA[ 
+			// retira capcha retira_capcha.xml 
+			]]></add>
+        </operation>	
+	</file>
+	
+	<file name="catalog/view/theme/*/template/product/product.tpl">	 
+		<operation error="skip"><!-- linha 158 geral -->
+            <search position="replace" offset="4"><![CDATA[
+			<b><?php echo $entry_captcha; ?></b><br />
+			]]></search>
+            <add><![CDATA[ 
+				<?php // retira capcha retira_capcha.xml ?>
+			]]></add>
+        </operation>		
+	</file>
+
+</modification>

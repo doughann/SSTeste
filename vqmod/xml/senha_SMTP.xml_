@@ -1,0 +1,20 @@
+<modification>
+
+	<id>Senha SMTP</id>
+	<version>1.0.0</version>
+	<vqmver>2.1.5</vqmver>
+	<author>Jeann - email: jeann@surgimento.com.br - twitter: @surgimento - http://www.surgimento.com.br data 29/03/2012</author>
+
+	<file name="admin/view/template/setting/setting.tpl">	 
+		
+		<operation error="skip">
+			<search position="replace" ><![CDATA[
+			<td><input type="text" name="config_smtp_password" value="<?php echo $config_smtp_password; ?>" /></td>
+			]]></search>
+			<add><![CDATA[
+			<td><input type="password" name="config_smtp_password" value="<?php echo $config_smtp_password; ?>" /></td>
+			]]></add>  
+		</operation>
+	</file>
+
+</modification>

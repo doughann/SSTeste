@@ -1,0 +1,16 @@
+<modification>
+	<id><![CDATA[jp timezone]]></id>
+	<version><![CDATA[1.5.5.1]]></version>
+	<vqmver><![CDATA[2.3.0]]></vqmver>
+	<author><![CDATA[funcreates]]></author>	
+	
+	<file name="system/startup.php">
+		<operation error="skip">
+			<search position="replace">
+			<![CDATA[date_default_timezone_set('UTC');]]>
+			</search>
+			<add><![CDATA[date_default_timezone_set('Asia/Tokyo');]]></add>
+		</operation>				
+
+	</file>		
+</modification>

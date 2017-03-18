@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<module>Product Image on Order Confirm Page</module>
+	<id>Product Image on Order Confirm Page</id>
+	<version>1.5.5.x</version>
+	<vqmver>2.X</vqmver>
+	<developer>kwason@outlook.com</developer>		
+	<author><![CDATA[<a href="http://xtensions.in" target = "_blank">www.xtensions.in</a><br />]]> <![CDATA[<a href="mailto:kwason@outlook.com">Email-Support</a><br />]]> <![CDATA[<a href="http://xtensions.in/support" target = "_blank">Ticket Support</a>]]></author>	
+	<file name="catalog/controller/checkout/confirm.php">
+		<operation>
+			<search position="before"><![CDATA[$this->data['products'][] = array(]]></search>
+			<add><![CDATA[
+			$this->data['column_image'] = $this->language->get('column_image');
+			$image =  $product['image'];
+					$this->load->model('tool/image');
+					if ($image && file_exists(DIR_IMAGE . $image)) {
+						$image = $this->model_tool_image->resize($image, 80, 80);
+					} else {
+						$image = $this->model_tool_image->resize('no_image.jpg', 80, 80);
+					}
+			]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA['href'       => $this->url->link('product/product', 'product_id=' . $product['product_id'])]]></search>
+			<add><![CDATA[
+			'href'       => $this->url->link('product/product', 'product_id=' . $product['product_id']),
+			'image'      => $image,
+			]]></add>
+		</operation>
+	</file>	
+	
+	<file name="catalog/language/*/checkout/checkout.php">
+		<operation>
+			<search position="before"><![CDATA[?>]]></search>
+			<add><![CDATA[
+			$_['column_image']           = 'Image';
+			]]></add>
+		</operation>		
+	</file>
+	
+	<file name="catalog/view/theme/journal2/template/checkout/confirm.tpl">
+		<operation>
+			<search position="before"><![CDATA[<td class="name"><?php echo $column_name; ?></td>]]></search>
+			<add><![CDATA[
+			<?php if ($products) { ?>
+				<td class="name"><?php echo $column_image; ?></td>
+			<?php } ?>	
+			]]></add>
+		</operation>
+		<operation>
+			<search position="before"><![CDATA[<td class="name"><a href="<?php echo $product['href']; ?>"><?php echo $product['name']; ?></a>]]></search>
+			<add><![CDATA[
+			<td class="center" width="1" ><img src="<?php echo $product['image']; ?>" title="<?php echo $product['name']; ?>" style="padding: 1px; border: 1px solid #DDDDDD;" /></td>
+			]]></add>
+		</operation>
+		<operation>
+			<search position="before"><![CDATA[<td class="name"><?php echo $voucher['description']; ?></td>]]></search>
+			<add><![CDATA[
+			<?php if ($products) { ?>
+				<td></td>
+			<?php } ?>	
+			]]></add>
+		</operation>	
+		<operation>
+			<search position="replace"><![CDATA[<td colspan="4" class="price"><b><?php echo $total['title']; ?>:</b></td>]]></search>
+			<add><![CDATA[
+			<?php if ($products) { ?>
+				<td colspan="4" class="price"></td>
+				<td class="price"><b><?php echo $total['title']; ?>:</b></td>
+			<?php } else { ?>
+				<td colspan="4" class="price"><b><?php echo $total['title']; ?>:</b></td>
+			<?php } ?>	
+			]]></add>
+		</operation>			
+	</file>
+	
+	<file name="catalog/view/theme/default/template/checkout/confirm.tpl">
+		<operation>
+			<search position="before"><![CDATA[<td class="name"><?php echo $column_name; ?></td>]]></search>
+			<add><![CDATA[
+			<?php if ($products) { ?>
+				<td class="name"><?php echo $column_image; ?></td>
+			<?php } ?>	
+			]]></add>
+		</operation>
+		<operation>
+			<search position="before"><![CDATA[<td class="name"><a href="<?php echo $product['href']; ?>"><?php echo $product['name']; ?></a>]]></search>
+			<add><![CDATA[
+			<td class="center" width="1" ><img src="<?php echo $product['image']; ?>" title="<?php echo $product['name']; ?>" style="padding: 1px; border: 1px solid #DDDDDD;" /></td>
+			]]></add>
+		</operation>
+		<operation>
+			<search position="before"><![CDATA[<td class="name"><?php echo $voucher['description']; ?></td>]]></search>
+			<add><![CDATA[
+			<?php if ($products) { ?>
+				<td></td>
+			<?php } ?>	
+			]]></add>
+		</operation>	
+		<operation>
+			<search position="replace"><![CDATA[<td colspan="4" class="price"><b><?php echo $total['title']; ?>:</b></td>]]></search>
+			<add><![CDATA[
+			<?php if ($products) { ?>
+				<td colspan="5" class="price"><b><?php echo $total['title']; ?>:</b></td>
+			<?php } else { ?>
+				<td colspan="4" class="price"><b><?php echo $total['title']; ?>:</b></td>
+			<?php } ?>	
+			]]></add>
+		</operation>		
+	</file>
+	
+	
+</modification>

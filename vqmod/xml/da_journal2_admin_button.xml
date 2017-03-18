@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<id>Journal2 Admin Button</id>
+	<version>1.4.x and 1.5.x</version>
+	<vqmver required="true">2.4.0</vqmver>
+	<author>digital-atelier.com</author>
+	
+	<file path="admin/controller/common/" name="header.php">
+		<operation error="skip">
+			<search position="after"><![CDATA[$this->data['logged'] = sprintf($this->language->get('text_logged'), $this->user->getUserName());]]></search>
+			<add><![CDATA[
+			        $this->load->model('setting/extension');
+                    $extensions = $this->model_setting_extension->getInstalled('module');
+                    if (in_array('journal2', $extensions)) {
+                        $this->data['journal2'] = $this->url->link('module/journal2', 'token=' . $this->session->data['token'], 'SSL');
+                        $this->data['journal2_clear_cache'] = $this->url->link('module/journal2/clear_cache', 'token=' . $this->session->data['token'], 'SSL');
+                        $this->session->data['j2_redirect'] = isset($this->request->get['route']) ? $this->request->get['route'] : null;
+                    } else {
+                        $this->data['journal2'] = '';
+                    }
+            ]]></add>
+		</operation>
+	</file>
+
+    <file path="admin/view/template/common/" name="header.tpl">
+        <operation error="skip">
+            <search position="after" offset="2"><![CDATA[<li><a href="http://forum.opencart.com" target="_blank"><?php echo $text_support; ?></a></li>]]></search>
+            <add><![CDATA[
+                <?php if ($journal2): ?>
+                <li id="journal2-module">
+                    <a href="<?php echo $journal2; ?>" class="top">Journal</a>
+                    <ul>
+                        <li><a href="<?php echo $journal2_clear_cache; ?>">Clear Cache</a></li>
+                    </ul>
+                </li>
+                <?php endif; ?>
+            ]]></add>
+        </operation>
+    </file>
+
+</modification>
+

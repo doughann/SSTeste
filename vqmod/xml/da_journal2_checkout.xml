@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<id>Journal2 Checkout</id>
+	<version>1.5.x</version>
+	<vqmver required="true">2.4.0</vqmver>
+	<author>digital-atelier.com</author>
+
+    <file path="catalog/controller/checkout/checkout.php">
+        <operation>
+            <search position="before"><![CDATA[$this->data['breadcrumbs'] = array();]]></search>
+            <add><![CDATA[
+                if (strpos($this->config->get('config_template'), 'journal2') === 0 && $this->journal2->settings->get('journal_checkout')) {
+                    return new Action('journal2/checkout');
+                }
+            ]]></add>
+        </operation>
+    </file>
+
+</modification>
+

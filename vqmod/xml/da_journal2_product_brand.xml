@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<id>Journal2 Product Gallery Image Fix</id>
+	<version>1.5.x</version>
+	<vqmver required="true">2.4.0</vqmver>
+	<author>digital-atelier.com</author>
+	
+	<file path="catalog/controller/product/" name="product.php">
+		<operation error="log">
+			<search position="after"><![CDATA[$this->data['manufacturer'] = $product_info['manufacturer'];]]></search>
+			<add><![CDATA[
+			if ($this->config->get('config_template') === 'journal2') {
+			    $this->load->model('catalog/manufacturer');
+                $manufacturer_info = $this->model_catalog_manufacturer->getManufacturer($product_info['manufacturer_id']);
+                if ($manufacturer_info && $manufacturer_info['image'] && $this->journal2->settings->get('manufacturer_image', '0') == '1') {
+                    $this->journal2->settings->set('manufacturer_image', 'on');
+                    $this->data['manufacturer_image_width'] = $this->journal2->settings->get('manufacturer_image_width', 100);
+                    $this->data['manufacturer_image_height'] = $this->journal2->settings->get('manufacturer_image_height', 100);
+                    $this->data['manufacturer_image'] = $this->model_tool_image->resize($manufacturer_info['image'], $this->data['manufacturer_image_width'], $this->data['manufacturer_image_height']);
+                    switch ($this->journal2->settings->get('manufacturer_image_additional_text', 'none')) {
+                        case 'brand':
+                            $this->data['manufacturer_image_name'] = $product_info['manufacturer'];
+                            break;
+                        case 'custom':
+                            $this->data['manufacturer_image_name'] = $this->journal2->settings->get('manufacturer_image_custom_text');
+                            break;
+                    }
+                }
+			}
+            ]]></add>
+		</operation>
+	</file>
+</modification>
+

@@ -1,0 +1,70 @@
+<modification>
+
+	<id>E-mail de aviso em html</id>
+	<version>1.0.0</version>
+	<vqmver>2.1.5</vqmver>
+	<author>Jeann - email: jeann@surgimento.com.br - twitter: @surgimento - http://www.surgimento.com.br data 01/04/2012 </author>
+
+	<file name="catalog/model/checkout/order.php">	 
+		
+		<operation error="skip">
+			<search position="replace" offset="48" ><![CDATA[
+			$text  = $language->get('text_new_received') . "\n\n";
+			]]></search>
+			<add><![CDATA[
+			
+				$text  = $language->get('text_new_received') . "<br><br>";
+				$text .= $language->get('text_new_order_id') . ' ' . $order_id . "<br>";
+				$text .= $language->get('text_new_date_added') . ' ' . date($language->get('date_format_short'), strtotime($order_info['date_added'])) . "<br>";
+				$text .= $language->get('text_new_order_status') . ' ' . $order_status . "<br><br>";
+				$text .= $language->get('text_new_products') . "<br>";
+				
+				foreach ($order_product_query->rows as $result) {
+					$text .= $result['quantity'] . 'x ' . $result['name'] . ' (' . $result['model'] . ') ' . html_entity_decode($this->currency->format($result['total'], $order_info['currency_code'], $order_info['currency_value']), ENT_NOQUOTES, 'UTF-8') . "<br>";
+					
+					$order_option_query = $this->db->query("SELECT * FROM " . DB_PREFIX . "order_option WHERE order_id = '" . (int)$order_id . "' AND order_product_id = '" . $result['order_product_id'] . "'");
+					
+					foreach ($order_option_query->rows as $option) {
+						$text .= chr(9) . '-' . $option['name'] . ' ' . (strlen($option['value']) > 20 ? substr($option['value'], 0, 20) . '..' : $option['value']) . "<br>";
+					}
+				}
+				
+				$text .= "<br>";
+
+				$text .= $language->get('text_new_order_total') . "<br>";
+				
+				foreach ($order_total_query->rows as $result) {
+					$text .= $result['title'] . ' ' . html_entity_decode($result['text'], ENT_NOQUOTES, 'UTF-8') . "<br>";
+				}			
+				
+				$text .= "<br>";
+				
+				if ($order_info['comment'] != '') {
+					$comment = ($order_info['comment'] .  "<br><br>" . $comment);
+				}
+				
+				if ($comment) {
+					$text .= $language->get('text_new_comment') . "<br><br>";
+					$text .= $comment . "<br><br>";
+				}
+			
+				$mail = new Mail(); 
+				$mail->protocol = $this->config->get('config_mail_protocol');
+				$mail->parameter = $this->config->get('config_mail_parameter');
+				$mail->hostname = $this->config->get('config_smtp_host');
+				$mail->username = $this->config->get('config_smtp_username');
+				$mail->password = $this->config->get('config_smtp_password');
+				$mail->port = $this->config->get('config_smtp_port');
+				$mail->timeout = $this->config->get('config_smtp_timeout');
+				$mail->setTo($this->config->get('config_email'));
+				$mail->setFrom($this->config->get('config_email'));
+				$mail->setSender($order_info['store_name']);
+				$mail->setSubject($subject);
+				$mail->setHtml($html);
+				$mail->send();
+			
+			]]></add>  
+		</operation>
+	</file>
+
+</modification>

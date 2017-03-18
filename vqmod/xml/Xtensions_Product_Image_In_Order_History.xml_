@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<module>Product Image on Order Confirm Page</module>
+	<id>Product Image on Order History Page</id>
+	<version>1.5.5.x</version>
+	<vqmver>2.X</vqmver>
+	<developer>kwason@outlook.com</developer>		
+	<author><![CDATA[<a href="http://xtensions.in" target = "_blank">www.xtensions.in</a><br />]]> <![CDATA[<a href="mailto:kwason@outlook.com">Email-Support</a><br />]]> <![CDATA[<a href="http://xtensions.in/support" target = "_blank">Ticket Support</a>]]></author>	
+	<file name="catalog/controller/account/order.php">
+		<operation>
+			<search position="after"><![CDATA[$options = $this->model_account_order->getOrderOptions($this->request->get['order_id'], $product['order_product_id']);]]></search>
+			<add><![CDATA[
+			$this->data['column_image'] = $this->language->get('column_image');
+			$image = $this->model_account_order->getProductImage($product['product_id']);
+					$this->load->model('tool/image');
+					if ($image && file_exists(DIR_IMAGE . $image)) {
+						$image = $this->model_tool_image->resize($image, 80, 80);
+					} else {
+						$image = $this->model_tool_image->resize('no_image.jpg', 80, 80);
+					}
+			]]></add>
+		</operation>
+		<operation>
+			<search position="after"><![CDATA['model'    => $product['model'],]]></search>
+			<add><![CDATA[
+			'image'		=> $image,
+			]]></add>
+		</operation>
+	</file>
+	<file name="catalog/model/account/order.php">
+		<operation>
+			<search position="before"><![CDATA[public function getOrderProducts($order_id) {]]></search>
+			<add><![CDATA[
+			public function getProductImage($product_id){
+				$query = $this->db->query("select image as image from " . DB_PREFIX . "product where product_id = ".(int)$product_id);
+				return $query->row['image'];
+			}
+			]]></add>
+		</operation>		
+	</file>
+	
+	<file name="catalog/language/*/account/order.php">
+		<operation>
+			<search position="before"><![CDATA[?>]]></search>
+			<add><![CDATA[
+			$_['column_image']           = 'Image';
+			]]></add>
+		</operation>		
+	</file>
+	
+	<file name="catalog/view/theme/journal2/template/account/order_info.tpl">
+		<operation>
+			<search position="before"><![CDATA[<td class="left"><?php echo $column_name; ?></td>]]></search>
+			<add><![CDATA[
+			<?php if ($products) { ?>
+				<td class="left"><?php echo $column_image; ?></td>
+			<?php } ?>	
+			]]></add>
+		</operation>
+		<operation>
+			<search position="before"><![CDATA[<td class="left"><?php echo $product['name']; ?>]]></search>
+			<add><![CDATA[
+			<td class="center" width="1" ><img src="<?php echo $product['image']; ?>" title="<?php echo $product['name']; ?>" style="padding: 1px; border: 1px solid #DDDDDD;" /></td>
+			]]></add>
+		</operation>
+		<operation>
+			<search position="before"><![CDATA[<td class="left"><?php echo $voucher['description']; ?></td>]]></search>
+			<add><![CDATA[
+			<?php if ($products) { ?>
+				<td></td>
+			<?php } ?>	
+			]]></add>
+		</operation>	
+		<operation>
+			<search position="replace"><![CDATA[<td class="ne" colspan="3"></td>]]></search>
+			<add><![CDATA[
+			<?php if ($products) { ?>
+				<td class="ne" colspan="4"></td>
+			<?php } else { ?>
+				<td class="ne" colspan="3"></td>
+			<?php } ?>	
+			]]></add>
+		</operation>			
+	</file>
+	
+	<file name="catalog/view/theme/default/template/account/order_info.tpl">
+		<operation>
+			<search position="before"><![CDATA[<td class="left"><?php echo $column_name; ?></td>]]></search>
+			<add><![CDATA[
+			<?php if ($products) { ?>
+				<td class="left"><?php echo $column_image; ?></td>
+			<?php } ?>	
+			]]></add>
+		</operation>
+		<operation>
+			<search position="before"><![CDATA[<td class="left"><?php echo $product['name']; ?>]]></search>
+			<add><![CDATA[
+			<td class="center" width="1" ><img src="<?php echo $product['image']; ?>" title="<?php echo $product['name']; ?>" style="padding: 1px; border: 1px solid #DDDDDD;" /></td>
+			]]></add>
+		</operation>
+		<operation>
+			<search position="before"><![CDATA[<td class="left"><?php echo $voucher['description']; ?></td>]]></search>
+			<add><![CDATA[
+			<?php if ($products) { ?>
+				<td></td>
+			<?php } ?>	
+			]]></add>
+		</operation>	
+		<operation>
+			<search position="replace"><![CDATA[<td colspan="3"></td>]]></search>
+			<add><![CDATA[
+			<?php if ($products) { ?>
+				<td colspan="4"></td>
+			<?php } else { ?>
+				<td colspan="3"></td>
+			<?php } ?>	
+			]]></add>
+		</operation>		
+	</file>
+	
+	
+</modification>

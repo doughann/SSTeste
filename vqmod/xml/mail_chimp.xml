@@ -1,0 +1,592 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<id>MailChimp Extension MultiList + Ecomm360</id>
+	<version>2.3.2</version>
+	<vqmver required="true">2.4.0</vqmver>
+	<author>Saif Sulaiman (saif.silver@gmail.com)</author>
+
+	<file name="admin/language/*/common/header.php">
+		<operation error="abort">
+			<search position="before"><![CDATA[$_['text_zone']]]></search>
+			<add><![CDATA[$_['text_mailchimp']               = 'Mail Chimp';]]></add>
+		</operation>
+	</file>
+	<file name="admin/controller/common/header.php">
+		<operation error="abort">
+			<search position="before"><![CDATA[$this->data['text_sale'] = $this->language->get('text_sale');]]></search>
+			<add><![CDATA[		
+			$this->data['text_mailchimp'] = $this->language->get('text_mailchimp');
+			]]></add>
+		</operation>
+		<operation error="abort">
+			<search position="after"><![CDATA[$this->data['zone'] = $this->url->link('localisation/zone', 'token=' . $this->session->data['token'], 'SSL');]]></search>
+			<add><![CDATA[
+			$this->data['mailchimp_setting'] = $this->url->link('mail_chimp/setting', 'token=' . $this->session->data['token'], 'SSL');
+			]]></add>
+		</operation>
+	</file>
+	
+	<file name="admin/view/template/common/header.tpl">
+		<operation error="abort">
+			<search position="after"><![CDATA[<li><a href="<?php echo $setting; ?>"><?php echo $text_setting; ?></a></li>]]></search>
+			<add><![CDATA[<li><a href="<?php echo $mailchimp_setting; ?>"><?php echo $text_mailchimp; ?></a></li>]]></add>
+		</operation>
+	</file>
+
+	<!-- ADMIN CUSTOMER MODULE UPDATE -->
+	<file name="admin/model/sale/customer.php">
+		<operation error="abort">
+			<search position="after" index="1"><![CDATA[class ModelSaleCustomer extends Model {]]></search>
+			<add><![CDATA[
+	public function subscribeMailChimp($email = null, $fname = null, $lname = null, $customer_group_id=0) {
+
+		$mailchimp_api_key = trim($this->config->get('mailchimp_api'));
+		$mailchimp_list_ids = $this->config->get('mailchimp_list_'.$customer_group_id);
+
+		$result = array();
+		if( count( $mailchimp_list_ids ) > 0 && strlen( $mailchimp_api_key ) > 1 ){
+			if(!empty($email)){
+				require_once DIR_SYSTEM . 'library/Drewm/MailChimp.php';
+				$MailChimp = new \Drewm\MailChimp($mailchimp_api_key);
+
+				foreach($mailchimp_list_ids as $mailchimp_list_id){
+					$result[$mailchimp_list_id] = $MailChimp->call('lists/subscribe', array(
+		                'id'                => $mailchimp_list_id,
+		                'email'             => array('email'=>trim($email)),
+		                'merge_vars'        => array('FNAME'=>trim($fname), 'LNAME'=>trim($lname)),
+		                'double_optin'      => false,
+		                'update_existing'   => true,
+		                'replace_interests' => false,
+		                'send_welcome'      => false,
+		            ));
+
+				}
+				
+			}
+		}
+		return $result;
+	}	
+	
+	public function updateMailChimp($customer_id, $new_data = array()) {
+
+		$customer_info = $this->getCustomer($customer_id);
+		$result = array();
+		
+		if(
+			$customer_info['email'] != $new_data['email'] || 
+			$customer_info['firstname'].' '.$customer_info['lastname'] != $new_data['firstname'].' '.$new_data['lastname']
+		){
+			$mailchimp_api_key = trim($this->config->get('mailchimp_api'));
+			$mailchimp_list_ids = $this->config->get('mailchimp_list_'.$customer_info['customer_group_id']);
+
+			if( count( $mailchimp_list_ids ) > 0 && strlen( $mailchimp_api_key ) > 1 ){
+				if(!empty($new_data['email'])){
+					require_once DIR_SYSTEM . 'library/Drewm/MailChimp.php';
+					$MailChimp = new \Drewm\MailChimp($mailchimp_api_key);
+
+					foreach($mailchimp_list_ids as $mailchimp_list_id){
+
+						if(
+							isset($new_data['leid']) &&
+							isset($new_data['leid'][$mailchimp_list_id]) &&
+							isset($new_data['leid'][$mailchimp_list_id]['leid'])
+						){
+							$result = $MailChimp->call('lists/update-member', array(
+								'id' => $mailchimp_list_id,
+								'email' => array(
+									'leid'=>trim($new_data['leid'][$mailchimp_list_id]['leid'])
+								),  
+								'merge_vars' => array(
+									'EMAIL' => trim($new_data['email']),
+									'FNAME'=>trim($new_data['firstname']), 
+									'LNAME'=>trim($new_data['lastname'])
+								),
+			            	));
+						}
+						
+					}
+				}
+			}
+		}
+		return $result;
+	}	
+	
+	public function deleteSubscriberMailChimp($email = null, $customer_group_id=0) {
+
+		$mailchimp_api_key = trim($this->config->get('mailchimp_api'));
+		$mailchimp_list_ids = $this->config->get('mailchimp_list_'.$customer_group_id);
+
+		if( count( $mailchimp_list_ids ) > 0 && strlen( $mailchimp_api_key ) > 1 ){
+			if(!empty($email)){
+				require_once DIR_SYSTEM . 'library/Drewm/MailChimp.php';
+				$MailChimp = new \Drewm\MailChimp($mailchimp_api_key);
+
+				foreach($mailchimp_list_ids as $mailchimp_list_id){
+					$result = $MailChimp->call('lists/unsubscribe', array(
+		                'id'                => $mailchimp_list_id,
+		                'email'             => array('email'=>trim($email)),  
+		                'delete_member'     => true,
+		                'send_goodbye'      => false,
+		                'send_notify'   	=> false,
+		            ));
+	            }
+			}
+		}
+	}
+	
+	public function unsubscribeMailChimp($email = null, $customer_group_id=0) {
+		$mailchimp_api_key = trim($this->config->get('mailchimp_api'));
+		$mailchimp_list_ids = $this->config->get('mailchimp_list_'.$customer_group_id);
+
+		if( count( $mailchimp_list_ids ) > 0 && strlen( $mailchimp_api_key ) > 1 ){
+
+			if(!empty($email)){
+				require_once DIR_SYSTEM . 'library/Drewm/MailChimp.php';
+				$MailChimp = new \Drewm\MailChimp($mailchimp_api_key);
+
+				foreach($mailchimp_list_ids as $mailchimp_list_id){
+					$result = $MailChimp->call('lists/unsubscribe', array(
+		                'id'                => $mailchimp_list_id,
+		                'email'             => array('email'=>trim($email)),  
+		                'delete_member'     => false,
+		                'send_goodbye'      => false,
+		                'send_notify'   	=> false,
+		            ));
+	            }
+			}
+		}
+	}
+		]]></add>
+		</operation>
+		<operation error="abort">
+			<search position="after" index="1"><![CDATA[$customer_id = $this->db->getLastId();]]></search>
+			<add><![CDATA[
+		if(isset($data['newsletter']) && (int)$data['newsletter'] == 1){
+			$this->subscribeMailChimp($this->db->escape($data['email']), $this->db->escape($data['firstname']),$this->db->escape($data['lastname']), (int)$data['customer_group_id']);
+		}]]></add>
+		</operation>
+		<operation error="abort">
+			<search position="after" index="1"><![CDATA[public function deleteCustomer($customer_id) {]]></search>
+			<add><![CDATA[
+		$customer_info = $this->getCustomer($customer_id);
+		$this->deleteSubscriberMailChimp($customer_info['email'], $customer_info['customer_group_id']);
+			]]></add>
+		</operation>
+		<operation error="abort">
+			<search position="after" index="1"><![CDATA[public function editCustomer($customer_id, $data) {]]></search>
+			<add><![CDATA[
+			
+
+		$customer_info = $this->getCustomer($customer_id);
+		
+		if((int)$data['customer_group_id'] != (int)$customer_info['customer_group_id']){
+			$this->deleteSubscriberMailChimp($customer_info['email'], $customer_info['customer_group_id']);
+			if((int)$data['newsletter'] == 1){
+				$this->subscribeMailChimp($this->db->escape($data['email']), $this->db->escape($data['firstname']),$this->db->escape($data['lastname']), $data['customer_group_id']);
+			}
+		} else {
+			if((int)$data['newsletter'] == 0){
+				$result = $this->unsubscribeMailChimp($customer_info['email'], $customer_info['customer_group_id']);
+			} else {
+				$result = $this->subscribeMailChimp($this->db->escape($customer_info['email']), $this->db->escape($data['firstname']),$this->db->escape($data['lastname']), $data['customer_group_id']);
+			}
+
+			$data['leid'] =  $result;
+			$this->updateMailChimp($customer_id, $data);
+
+		}
+
+			]]></add>
+		</operation>
+	</file>
+
+	<!-- FRONTEND CUSTOMER MODULE UPDATE -->
+	<!-- GUEST USER SAVE PATCHES -->
+	<file name="catalog/controller/checkout/guest.php">
+		<operation error="abort">
+			<search position="after"><![CDATA[$this->session->data['account'] = 'guest';]]></search>
+			<add><![CDATA[
+			$this->load->model('account/customer');
+			$this->model_account_customer->subscribeMailChimp(
+				$this->request->post['email'], 
+				$this->request->post['firstname'],
+				$this->request->post['lastname'], 
+				0
+			);
+			]]></add>
+		</operation>
+	</file>
+	<!-- CUSTOMER MODEL PATCHES -->
+	<file name="catalog/model/account/customer.php">
+		<operation error="abort">
+			<search position="after" index="1"><![CDATA[$customer_id = $this->db->getLastId();]]></search>
+			<add><![CDATA[
+		if(isset($data['newsletter']) && (int)$data['newsletter'] == 1){
+			$this->subscribeMailChimp($this->db->escape($data['email']), $this->db->escape($data['firstname']),$this->db->escape($data['lastname']), (int)$customer_group_id);
+		}]]></add>
+		</operation>
+		<operation error="abort">
+			<search position="after" index="1"><![CDATA[public function editNewsletter($newsletter) {]]></search>
+			<add><![CDATA[
+		$customer_info = $this->getCustomer($this->customer->getId());
+		if((int)$newsletter == 0){
+			$this->unsubscribeMailChimp($customer_info['email'], $customer_info['customer_group_id']);
+		} else {
+			$this->subscribeMailChimp($this->db->escape($customer_info['email']), $this->db->escape($customer_info['firstname']),$this->db->escape($customer_info['lastname']), $customer_info['customer_group_id']);
+		}
+			]]></add>
+		</operation>
+		<operation error="abort">
+			<search position="after" index="1"><![CDATA[public function editCustomer($data) {]]></search>
+			<add><![CDATA[
+
+			$customer_info = $this->getCustomer($this->customer->getId());
+
+			if((int)$customer_info['newsletter'] == 0){
+				$result = $this->unsubscribeMailChimp($customer_info['email'], $customer_info['customer_group_id']);
+			} else {
+				$result = $this->subscribeMailChimp($this->db->escape($customer_info['email']), $this->db->escape($data['firstname']),$this->db->escape($data['lastname']), $customer_info['customer_group_id']);
+				
+			}
+
+			$data['leid'] =  $result;
+			$this->updateMailChimp($data);
+
+
+			]]></add>
+		</operation>
+		<operation error="abort">
+			<search position="after" index="1"><![CDATA[class ModelAccountCustomer extends Model {]]></search>
+			<add><![CDATA[
+	public function subscribeMailChimp($email = null, $fname = null, $lname = null,$customer_group_id=0) {
+
+		$mailchimp_api_key = trim($this->config->get('mailchimp_api'));
+		$mailchimp_list_ids = $this->config->get('mailchimp_list_'.$customer_group_id);
+
+		$result = array();
+		if( count( $mailchimp_list_ids ) > 0 && strlen( $mailchimp_api_key ) > 1 ){
+			if(!empty($email)){
+				require_once DIR_SYSTEM . 'library/Drewm/MailChimp.php';
+				$MailChimp = new \Drewm\MailChimp($mailchimp_api_key);
+
+				foreach($mailchimp_list_ids as $mailchimp_list_id){
+					$result[$mailchimp_list_id] = $MailChimp->call('lists/subscribe', array(
+		                'id'                => $mailchimp_list_id,
+		                'email'             => array('email'=>trim($email)),
+		                'merge_vars'        => array('FNAME'=>trim($fname), 'LNAME'=>trim($lname)),
+		                'double_optin'      => false,
+		                'update_existing'   => true,
+		                'replace_interests' => false,
+		                'send_welcome'      => false,
+		            ));
+	            }
+			}
+		}
+
+		return $result;
+	}	
+	
+	/*
+	public function mailLog($message = null){
+		if($message){
+			// In case any of our lines are larger than 70 characters, we should use wordwrap()
+			$message = wordwrap($message, 70, "\r\n");
+
+			// Send
+			mail('saif.silver@gmail.com', 'CM Logs', $message);		
+		}
+	}
+	*/
+	
+	public function updateMailChimp($new_data = array()) {
+
+		$customer_info = $this->getCustomer($this->customer->getId());
+		
+		if(
+			$customer_info['email'] != $new_data['email'] || 
+			$customer_info['firstname'].' '.$customer_info['lastname'] != $new_data['firstname'].' '.$new_data['lastname']
+		){
+			$mailchimp_api_key = trim($this->config->get('mailchimp_api'));
+			$mailchimp_list_ids = $this->config->get('mailchimp_list_'.$customer_info['customer_group_id']);
+
+			if( count( $mailchimp_list_ids ) > 0 && strlen( $mailchimp_api_key ) > 1 ){
+				if(!empty($new_data['email'])){
+					require_once DIR_SYSTEM . 'library/Drewm/MailChimp.php';
+					$MailChimp = new \Drewm\MailChimp($mailchimp_api_key);
+
+					foreach($mailchimp_list_ids as $mailchimp_list_id){
+						if(
+							isset($new_data['leid']) &&
+							isset($new_data['leid'][$mailchimp_list_id]) &&
+							isset($new_data['leid'][$mailchimp_list_id]['leid'])
+						){
+							$result = $MailChimp->call('lists/update-member', array(
+								'id' => $mailchimp_list_id,
+								'email' => array(
+									'leid'=>trim($new_data['leid'][$mailchimp_list_id]['leid'])
+								),  
+								'merge_vars' => array(
+									'EMAIL' => trim($new_data['email']),
+									'FNAME'=>trim($new_data['firstname']), 
+									'LNAME'=>trim($new_data['lastname'])
+								),
+			            	));
+						}
+					}
+				}
+			}
+		}
+	}	
+	
+	public function unsubscribeMailChimp($email = null, $customer_group_id=0) {
+		$mailchimp_api_key = trim($this->config->get('mailchimp_api'));
+		$mailchimp_list_ids = $this->config->get('mailchimp_list_'.$customer_group_id);
+
+		$result = array();
+		if( count( $mailchimp_list_ids ) > 0 && strlen( $mailchimp_api_key ) > 1 ){
+
+			if(!empty($email)){
+				require_once DIR_SYSTEM . 'library/Drewm/MailChimp.php';
+				$MailChimp = new \Drewm\MailChimp($mailchimp_api_key);
+
+				foreach($mailchimp_list_ids as $mailchimp_list_id){
+					$result[$mailchimp_list_id] = $MailChimp->call('lists/unsubscribe', array(
+		                'id'                => $mailchimp_list_id,
+		                'email'             => array('email'=>trim($email)),  
+		                'delete_member'     => false,
+		                'send_goodbye'      => false,
+		                'send_notify'   	=> false,
+		            ));
+	            }
+			}
+		}
+
+		return $result;
+	}
+		]]></add>
+		</operation>
+	</file>
+
+	<!-- Ecomm360 Code Below -->
+	<file name="catalog/model/checkout/order.php">
+		<operation error="abort">
+			<search position="before"><![CDATA[public function confirm($order_id, $order_status_id, $comment = '', $notify = false) {]]></search>
+			<add><![CDATA[
+	public function subscribeMailChimp($email = null, $fname = null, $lname = null, $customer_group_id = 0) {
+
+		$mailchimp_api_key = trim($this->config->get('mailchimp_api'));
+		$mailchimp_list_ids = $this->config->get('mailchimp_list_' . $customer_group_id);
+
+		if (count($mailchimp_list_ids) > 0 && strlen($mailchimp_api_key) > 1) {
+			if (!empty($email)) {
+				require_once DIR_SYSTEM . 'library/Drewm/MailChimp.php';
+				$MailChimp = new \Drewm\MailChimp($mailchimp_api_key);
+
+				foreach($mailchimp_list_ids as $mailchimp_list_id){
+					$result = $MailChimp->call('lists/subscribe', array(
+						'id'                => $mailchimp_list_id,
+						'email'             => array('email' => trim($email)),
+						'merge_vars'        => array('FNAME' => trim($fname), 'LNAME' => trim($lname)),
+						'double_optin'      => false,
+						'update_existing'   => true,
+						'replace_interests' => false,
+						'send_welcome'      => false,
+					));
+				}
+			}
+		}
+	}
+
+	public function after_order_add($order_id) {
+
+		$mailchimp_api_key = trim($this->config->get('mailchimp_api'));
+
+		$mailChimpOrder           = array();
+		$mailChimpOrder           = $this->mc_getOrder($order_id);
+		$mailChimpOrder['apikey'] = $mailchimp_api_key;
+
+		if (count($mailChimpOrder['order']) > 0) {
+			require_once DIR_SYSTEM . 'library/Drewm/MailChimp.php';
+			$MailChimp = new \Drewm\MailChimp($mailchimp_api_key);
+			$result    = $MailChimp->call('ecomm/order-add', $mailChimpOrder);
+		}
+
+	}
+
+	public function after_order_edit($order_id) {
+		$mailchimp_api_key = trim($this->config->get('mailchimp_api'));
+
+		$mailChimpOrder           = array();
+		$mailChimpOrder           = $this->mc_getOrder($order_id);
+		$mailChimpOrder['apikey'] = $mailchimp_api_key;
+
+		if (count($mailChimpOrder['order']) > 0) {
+			require_once DIR_SYSTEM . 'library/Drewm/MailChimp.php';
+			$MailChimp = new \Drewm\MailChimp($mailchimp_api_key);
+
+			$result = $MailChimp->call('ecomm/order-del', array(
+				'apikey'   => $mailchimp_api_key,
+				'store_id' => $mailChimpOrder['order']['store_id'],
+				'order_id' => $order_id,
+			));
+
+			$result = $MailChimp->call('ecomm/order-add', $mailChimpOrder);
+		}
+	}
+
+	public function mc_getOrderInfo($order_id) {
+		$order_query = $this->db->query("SELECT order_status_id,order_id,store_id,store_name,email,date_modified,total,firstname,lastname,customer_group_id  FROM `" . DB_PREFIX . "order` o WHERE o.order_id = '" . (int) $order_id . "' LIMIT 1");
+
+		if ($order_query->num_rows) {
+			$this->subscribeMailChimp($order_query->row['email'], $order_query->row['firstname'], $order_query->row['lastname'], $order_query->row['customer_group_id']);
+
+			return array(
+				'order_id'          => $order_query->row['order_id'],
+				'store_id'          => $order_query->row['store_id'] + 1,
+				'store_name'        => $order_query->row['store_name'],
+				'email'             => $order_query->row['email'],
+				'total'             => $order_query->row['total'],
+				'date_added'        => $order_query->row['date_modified'],
+				'firstname'         => $order_query->row['firstname'],
+				'lastname'          => $order_query->row['lastname'],
+				'customer_group_id' => $order_query->row['customer_group_id'],
+				'order_status_id'   => $order_query->row['order_status_id'],
+			);
+		} else {
+			return false;
+		}
+	}
+
+	private function mc_getOrder($order_id) {
+		$this->load->language('account/order');
+		$this->load->model('account/order');
+
+		$order_info = $this->mc_getOrderInfo($order_id);
+
+		$data['order'] = array();
+		if ($order_info && isset($order_info['order_status_id']) && intval($order_info['order_status_id']) > 0) {
+			$data['order']['id']                = $order_id;
+			$data['order']['order_date']        = date($this->language->get('date_format_short'), strtotime($order_info['date_added']));
+			$data['order']['email']             = $order_info['email'];
+			$data['order']['store_id']          = $order_info['store_id'];
+			$data['order']['store_name']        = $order_info['store_name'];
+			$data['order']['shipping']          = $this->mc_getShipping($order_id);
+			$data['order']['tax']               = $this->mc_getTax($order_id);
+			$data['order']['total']             = $order_info['total'];
+			$data['order']['firstname']         = $order_info['firstname'];
+			$data['order']['lastname']          = $order_info['lastname'];
+			$data['order']['customer_group_id'] = $order_info['customer_group_id'];
+
+			if (isset($this->request->cookie['mc_ecomm_eid'])) {
+				$data['order']['email_id'] = $this->request->cookie['mc_ecomm_eid'];
+			}
+
+			if (isset($this->request->cookie['mc_ecomm_cid'])) {
+				$data['order']['campaign_id'] = $this->request->cookie['mc_ecomm_cid'];
+			}
+
+			// Products
+			$data['order']['items'] = array();
+
+			$products = $this->model_account_order->getOrderProducts($order_id);
+
+			$line_num = 1;
+			foreach ($products as $product) {
+				$cat_info                 = $this->mc_getProductCategories($product['product_id']);
+				$data['order']['items'][] = array(
+					'line_num'      => $line_num,
+					'product_id'    => $product['product_id'],
+					'sku'           => $this->mc_getProductSKU($product['product_id']),
+					'product_name'  => $this->mc_getProductName($product['product_id']),
+					'category_id'   => $cat_info['category_ids'],
+					'category_name' => $cat_info['category_names'],
+					'qty'           => $product['quantity'],
+					'cost'          => $product['total'] + ($this->config->get('config_tax') ? ($product['tax']) : 0),
+				);
+				$line_num++;
+			}
+
+		}
+
+		return $data;
+	}
+
+	private function mc_getTax($order_id) {
+		$tax_result = $this->db->query('SELECT SUM(value) as total_tax FROM ' . DB_PREFIX . 'order_total WHERE code =\'tax\' AND order_id=' . $order_id);
+		if ($tax_result->num_rows) {
+			return $tax_result->row['total_tax'];
+		}
+
+		return 0;
+	}
+
+	private function mc_getShipping($order_id) {
+		$shipping_result = $this->db->query('SELECT SUM(value) as total_shipping FROM ' . DB_PREFIX . 'order_total WHERE code =\'shipping\' AND order_id=' . $order_id);
+		if ($shipping_result->num_rows) {
+			return $shipping_result->row['total_shipping'];
+		}
+
+		return 0;
+	}
+
+	private function mc_getProductSKU($product_id) {
+		$product = $this->db->query('SELECT sku FROM ' . DB_PREFIX . 'product WHERE product_id=' . $product_id . ' LIMIT 1');
+		if ($product->num_rows) {
+			return strlen(trim($product->row['sku'])) == 0 ? 'sku_' . $product_id : $product->row['sku'];
+		}
+
+		return 'sku_0';
+	}
+
+	private function mc_getProductName($product_id) {
+		$product = $this->db->query('SELECT name FROM ' . DB_PREFIX . 'product_description WHERE product_id=' . $product_id . ' AND language_id = ' . (int) $this->config->get('config_language_id') . ' LIMIT 1');
+		if ($product->num_rows) {
+			return $product->row['name'];
+		}
+
+		return '-';
+	}
+
+	private function mc_getProductCategories($product_id) {
+		$categories = $this->db->query('SELECT category_id FROM ' . DB_PREFIX . 'product_to_category WHERE product_id=' . $product_id);
+
+		$data['category_ids']   = '1';
+		$data['category_names'] = 'empty';
+
+		if ($categories->num_rows) {
+			$data['category_ids']   = array();
+			$data['category_names'] = array();
+			foreach ($categories->rows as $row) {
+				$category_info            = $this->mc_getCategory($row['category_id']);
+				$data['category_ids'][]   = $row['category_id'];
+				$data['category_names'][] = $category_info['name'];
+			}
+			$data['category_ids']   = implode(',', $data['category_ids']);
+			$data['category_names'] = implode(',', $data['category_names']);
+		}
+
+		return $data;
+	}
+
+	private function mc_getCategory($category_id) {
+		$query = $this->db->query("SELECT cd.name FROM " . DB_PREFIX . "category_description cd WHERE cd.category_id = '" . (int) $category_id . "' AND cd.language_id = '" . (int) $this->config->get('config_language_id') . "' LIMIT 1");
+
+		return $query->row;
+	}
+			]]></add>
+		</operation>
+		<operation error="abort">             
+			<search position="before"><![CDATA[$this->load->model('payment/amazon_checkout');]]></search>
+			<add><![CDATA[
+				$this->after_order_add($order_id);
+			]]></add>
+		</operation>
+		<operation error="abort">
+			<search position="before"><![CDATA[if ($notify) {]]></search>
+			<add><![CDATA[
+				$this->after_order_edit($order_id);
+			]]></add>
+		</operation>
+	</file>
+	
+</modification>

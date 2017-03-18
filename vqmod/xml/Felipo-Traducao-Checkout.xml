@@ -1,0 +1,23 @@
+<modification>
+	<id><![CDATA[Code Market - Tradução Checkoutsem os Passos]]></id>
+	<version><![CDATA[1]]></version>
+	<vqmver><![CDATA[2.4.1]]></vqmver>
+	<author><![CDATA[Felipo Antonoff - codemarket.com.br]]></author>
+
+<!-- Mudar o Idioma do Checkout nos Passos -->
+	<file path="catalog/language/portuguese-br/checkout/" name="checkout.php">
+	<operation>
+			<search position="replace" offset="6"><![CDATA[$_['text_checkout_option']           = '1º Passo: Identificação';
+]]></search>
+			<add><![CDATA[
+					$_['text_checkout_option']           = 'Identificação';
+					$_['text_checkout_account']          = 'Registro e Endereço';
+					$_['text_checkout_payment_address']  = 'Endereço para Cobrança';
+					$_['text_checkout_shipping_address'] = 'Endereço para Entrega';
+					$_['text_checkout_shipping_method']  = 'Forma de Entrega';
+					$_['text_checkout_payment_method']   = 'Forma de Pagamento';
+					$_['text_checkout_confirm']          = 'Confirmar Pedido';
+			]]></add>
+		</operation>
+	</file>
+</modification>

@@ -1,0 +1,21 @@
+<modification>
+
+	<id>Alteração para esconder a loja toda </id>
+	<version>1.0.0</version>
+	<vqmver>2.1.5</vqmver>
+	<author>Jeann - email: jeann@surgimento.com.br - twitter: @surgimento - http://www.surgimento.com.br data 30/03/2012</author>
+
+	<file name="catalog/controller/common/maintenance.php">	 
+		
+		<operation error="skip">
+			<search position="replace" offset="3" ><![CDATA[
+				$this->children = array(
+			]]></search>
+			<add><![CDATA[
+				$this->data['header']="";
+				$this->data['footer']= "";
+			]]></add>  
+		</operation>
+	</file>
+
+</modification>

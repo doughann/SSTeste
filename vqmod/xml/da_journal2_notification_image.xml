@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<id>Journal2 Notification Image</id>
+	<version>1.5.x</version>
+	<vqmver required="true">2.4.0</vqmver>
+	<author>digital-atelier.com</author>
+	
+	<file path="catalog/controller/checkout/" name="cart.php">
+		<operation error="skip">
+			<search position="before"><![CDATA[$json['success'] = sprintf($this->language->get('text_success'), $this->url->link('product/product', 'product_id=' . $this->request->post['product_id']), $product_info['name'], $this->url->link('checkout/cart'));]]></search>
+			<add><![CDATA[
+			    if (strpos($this->config->get('config_template'), 'journal2') === 0) {
+                    $this->load->model('tool/image');
+                    $json['image'] = Journal2Utils::resizeImage($this->model_tool_image, $product_info['image'], $this->config->get('config_image_cart_width'), $this->config->get('config_image_cart_height'));
+                }
+            ]]></add>
+		</operation>
+	</file>
+
+    <file path="catalog/controller/account/" name="wishlist.php">
+        <operation error="skip">
+            <search position="before"><![CDATA[$json['success'] = sprintf($this->language->get('text_success'), $this->url->link('product/product', 'product_id=' . $this->request->post['product_id']), $product_info['name'], $this->url->link('account/wishlist'));]]></search>
+            <add><![CDATA[
+                if (strpos($this->config->get('config_template'), 'journal2') === 0) {
+                    $this->load->model('tool/image');
+                    $json['image'] = Journal2Utils::resizeImage($this->model_tool_image, $product_info['image'], $this->config->get('config_image_cart_width'), $this->config->get('config_image_cart_height'));
+                }
+            ]]></add>
+        </operation>
+        <operation error="skip">
+            <search position="before"><![CDATA[$json['success'] = sprintf($this->language->get('text_login'), $this->url->link('account/login', '', 'SSL'), $this->url->link('account/register', '', 'SSL'), $this->url->link('product/product', 'product_id=' . $this->request->post['product_id']), $product_info['name'], $this->url->link('account/wishlist'));]]></search>
+            <add><![CDATA[
+                if (strpos($this->config->get('config_template'), 'journal2') === 0) {
+                    $this->load->model('tool/image');
+                    $json['image'] = Journal2Utils::resizeImage($this->model_tool_image, $product_info['image'], $this->config->get('config_image_cart_width'), $this->config->get('config_image_cart_height'));
+                }
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/product/" name="compare.php">
+        <operation error="skip">
+            <search position="before"><![CDATA[$json['success'] = sprintf($this->language->get('text_success'), $this->url->link('product/product', 'product_id=' . $this->request->post['product_id']), $product_info['name'], $this->url->link('product/compare'));]]></search>
+            <add><![CDATA[
+                if (strpos($this->config->get('config_template'), 'journal2') === 0) {
+			        $this->load->model('tool/image');
+                    $json['image'] = Journal2Utils::resizeImage($this->model_tool_image, $product_info['image'], $this->config->get('config_image_cart_width'), $this->config->get('config_image_cart_height'));
+                }
+            ]]></add>
+        </operation>
+    </file>
+
+    <file name="catalog/controller/module/cart.php,catalog/controller/checkout/cart.php">
+        <operation error="skip">
+            <search position="replace"><![CDATA[$image = '';]]></search>
+            <add><![CDATA[$image = $this->model_tool_image->resize('no_image.jpg', $this->config->get('config_image_cart_width'), $this->config->get('config_image_cart_height'));]]></add>
+        </operation>
+    </file>
+
+    <file name="catalog/controller/product/product.php">
+        <operation error="skip">
+            <search position="replace"><![CDATA[$this->data['popup'] = '';]]></search>
+            <add><![CDATA[$this->data['popup'] = $this->model_tool_image->resize('no_image.jpg', $this->config->get('config_image_popup_width'), $this->config->get('config_image_popup_height'));]]></add>
+        </operation>
+        <operation error="skip">
+            <search position="replace"><![CDATA[$this->data['thumb'] = '';]]></search>
+            <add><![CDATA[$this->data['thumb'] = $this->model_tool_image->resize('no_image.jpg', $this->config->get('config_image_thumb_width'), $this->config->get('config_image_thumb_height'));]]></add>
+        </operation>
+    </file>
+</modification>
+

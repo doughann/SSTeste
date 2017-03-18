@@ -1,0 +1,351 @@
+<modification>
+	<id>Order Product Edit</id>
+	<version>1.2.9</version>
+	<vqmver>2.4</vqmver>
+	<author>Jesse Wallace</author>
+	
+	<file name="admin/controller/sale/order.php">
+		<operation error="skip">
+			<search position="before"><![CDATA[$this->data['action'] = $this->url->link('sale/order/insert', 'token=' . $this->session->data['token'] . $url, 'SSL');]]></search>
+			<add><![CDATA[$this->data['view_order'] = "";]]></add>
+		</operation>
+		<operation error="abort">
+			<search position="before"><![CDATA[$this->data['action'] = $this->url->link('sale/order/update', 'token=' . $this->session->data['token'] . '&order_id=' . $this->request->get['order_id'] . $url, 'SSL');]]></search>
+			<add><![CDATA[$this->data['view_order'] = $this->url->link('sale/order/info', 'token=' . $this->session->data['token'] . '&order_id=' . $this->request->get['order_id'] . $url, 'SSL');]]></add>
+		</operation>
+		
+		<operation error="abort">
+			<search position="before" index="2"><![CDATA[$this->data['cancel'] = $this->url->link('sale/order', 'token=' . $this->session->data['token'] . $url, 'SSL');]]></search>
+			<add><![CDATA[$this->data['edit_order'] = $this->url->link('sale/order/update', 'token=' . $this->session->data['token'] . '&order_id=' . $this->request->get['order_id'] . $url, 'SSL');]]></add>
+		</operation>
+		
+		<operation error="abort">
+			<search position="before" index="1"><![CDATA[$this->data['text_order_id'] = $this->language->get('text_order_id');]]></search>
+			<add><![CDATA[$this->data['text_edit_btn'] = $this->language->get('text_edit_btn');]]></add>
+		</operation>		
+
+		<operation error="abort">
+			<search position="before" index="1"><![CDATA[$this->data['text_order'] = $this->language->get('text_order');]]></search>
+			<add><![CDATA[$this->data['text_view_btn'] = $this->language->get('text_view_btn');]]></add>
+		</operation>			
+	</file>
+	
+	<file name="admin/language/*/sale/order.php">
+		<operation error="abort">
+			<search position="before"><![CDATA[$_['text_order_id']]]></search>
+			<add><![CDATA[$_['text_edit_btn']                           = 'Edit Order';
+			$_['text_view_btn']                           = 'View Order';]]></add>
+		</operation>			
+	</file>	
+		
+	<file name="admin/view/template/sale/order_info.tpl">
+		<operation error="abort">
+			<search position="replace"><![CDATA[<a href="<?php echo $cancel; ?>" class="button"><?php echo $button_cancel; ?></a>]]></search>
+			<add><![CDATA[<a href="<?php echo $edit_order; ?>" class="button"><?php echo $text_edit_btn; ?></a><a href="<?php echo $cancel; ?>" class="button"><?php echo $button_cancel; ?></a>]]></add>
+		</operation>
+	</file>	
+	
+	<file name="admin/view/template/sale/order_form.tpl">
+
+		<operation error="abort">
+			<search position="replace"><![CDATA[<a onclick="$('#form').submit();" class="button"><?php echo $button_save; ?></a>]]></search>
+			<add><![CDATA[ <!--order product edit -->
+			<a id="save_btn" onclick="$('#form').submit();" class="button"><?php echo $button_save; ?></a><a href="<?php echo $view_order; ?>" class="button"><?php echo $text_view_btn; ?></a>
+			<!--order product edit -->]]></add>		
+		</operation>
+			
+		<operation error="abort">
+			<search position="before"><![CDATA[<form action="<?php echo $action; ?>" method="post" enctype="multipart/form-data" id="form">]]></search>
+			<add><![CDATA[<!--order product edit -->
+			<form action="" method="post" enctype="multipart/form-data" id="order_product_edit"></form>
+			<!--order product edit -->]]></add>		
+		</operation>
+		
+		<operation error="abort">
+			<search position="after"><![CDATA[<input type="hidden" name="order_product[<?php echo $product_row; ?>][name]" value="<?php echo $order_product['name']; ?>" />]]></search>
+			<add><![CDATA[                  <!--order product edit -->
+                  <div style="display:table; width:50%" id="order_product_options_<?php echo $order_product['order_product_id']; ?>">
+                  <!--order product edit -->]]></add>		
+		</operation>						
+		
+		<operation error="abort">
+			<search position="before"><![CDATA[<?php foreach ($order_product['download'] as $download) { ?>]]></search>
+			<add><![CDATA[                  <!--order product edit -->
+                  </div>
+	              <br /><a class="button" id="product_edit_button_<?php echo $order_product['order_product_id']; ?>">Edit Product</a>
+                  <input style="display:none" type="text" name="order_product_id" value="<?php echo $order_product['order_product_id']; ?>" />
+                  <!--order product edit -->]]></add>		
+		</operation>		
+		
+		<operation error="abort">
+			<search position="replace" index="1"><![CDATA[<td class="left"><?php echo $order_product['name']; ?><br />]]></search>
+			<add><![CDATA[<!--order product edit -->
+                <td class="left"><span id="name_edit_<?php echo $order_product['order_product_id']; ?>"><?php echo $order_product['name']; ?></span><br>             
+                <!--order product edit -->]]></add>		
+		</operation>
+		
+		<operation error="abort">
+			<search position="replace" index="1"><![CDATA[<td class="left"><?php echo $order_product['model']; ?>]]></search>
+			<add><![CDATA[<!--order product edit -->
+                <td class="left"><span id="model_edit_<?php echo $order_product['order_product_id']; ?>"><?php echo $order_product['model']; ?></span>             
+                <!--order product edit -->]]></add>		
+		</operation>			
+					
+		<operation error="abort">
+			<search position="replace" index="1"><![CDATA[<td class="right"><?php echo $order_product['quantity']; ?>]]></search>
+			<add><![CDATA[<!--order product edit -->
+                <td class="right"><span id="qty_edit_<?php echo $order_product['order_product_id']; ?>"><?php echo $order_product['quantity']; ?></span>             
+                <!--order product edit -->]]></add>		
+		</operation>		
+
+		<operation error="abort">
+			<search position="replace" index="1"><![CDATA[<td class="right"><?php echo $order_product['price']; ?>]]></search>
+			<add><![CDATA[<td class="right">
+                  <!--order product edit -->
+                  <span id="unit_price_edit_<?php echo $order_product['order_product_id']; ?>"><?php echo $order_product['price']; ?></span>
+                  <!--order product edit -->]]></add>		
+		</operation>			
+		
+		<operation error="abort">
+			<search position="before" offset="2"><![CDATA[<td class="center" colspan="5"><?php echo $text_no_results; ?></td>]]></search>
+			<add><![CDATA[<!--order product edit -->
+              <tr id="add_new_line_item_row">
+              	<td class="right" colspan="5">
+                	Description: <input id="line_item_description" type="text" /><br />	            	
+                	Price: <input id="line_item_price" type="text" /><br /><br />
+                    <a id="add_line_item" class="button">Add Line Item</a>&nbsp;
+                </td>
+              </tr>
+              <!--order product edit -->]]></add>		
+		</operation>			
+		
+		<operation error="abort">
+			<search position="replace"><![CDATA[<td class="right" colspan="4"><?php echo $order_total['title']; ?>:]]></search>
+			<add><![CDATA[<!--order product edit -->
+                  <td class="right" colspan="4">
+                  <?php if($order_total['code'] == "shipping"){ ?><a id="edit_shipping">[ Edit ]</a><?php } ?>
+                  <?php if($order_total['code'] == "line_item"){ ?><a name="delete_line_item">[ Remove ]</a><?php } ?>
+                  <span><?php echo $order_total['title']; ?>:</span>
+                  <!--order product edit -->]]></add>		
+		</operation>		
+		
+		<operation error="abort">
+			<search position="before"><![CDATA[$.widget('custom.catcomplete', $.ui.autocomplete, {]]></search>
+			<add><![CDATA[<!--order product edit -->
+$(function (){	
+	$('a[id^="product_edit_button_"]').on("click",function(){
+		var order_product_id = $(this).next('input[name="order_product_id"]').val();
+		$.ajax({
+			url: 'index.php?route=sale/order_product_edit/getProductOptions&token=<?php echo $token; ?>&order_product_id='+order_product_id,
+			success: function(data){						
+				var order_product = jQuery.parseJSON(data);
+
+				// Clear Current Options
+				$("#order_product_options_"+ order_product['order_product_id']).html('');
+				// Loop Through Options
+				var html = "";
+				console.log(order_product);		
+				$.each(order_product['options'],function(index,value){
+					var option = $(this).attr("product_option");
+					var current = $(this).attr("current_value");
+					if(current.length === 0){current.push({value: ""})}
+
+					if(option.type == 'select'){
+						newElement =  $('<select form="order_product_edit" name="option_id['+option.product_option_id+']"></select>');
+						$(newElement).attr("name","option_id["+option.product_option_id+"]");
+					}				
+					if(option.type == 'image' || option.type == 'text'){						
+						newElement = $('<input form="order_product_edit" type="text" name="option_id[' + option.product_option_id + ']" value="'+ current[0].value +'">');
+					}
+					if(option.type == 'textarea'){
+						newElement = $('<textarea form="order_product_edit" name="option_id[' + option.product_option_id + ']">'+ current[0].value +'</textarea>');						
+					}		
+							
+					if(option.type == 'date' || option.type == 'datetime' || option.type == 'time'){
+						newElement = $('<input form="order_product_edit" type="text" name="option_id[' + option.product_option_id + ']"value="'+ current[0].value +'" class="'+ option.type +'" />');
+					}
+					
+					// Add DIV to DOM
+					$("#order_product_options_"+ order_product['order_product_id']).append("<div><span>" + option.name + " : ");					
+					
+					// Check For Multiple Uploads
+					if(option.type == 'file' ){						
+						$(current).each(function(index, element) {
+                        	newElement = $('<input form="order_product_edit" type="text" name="option_id[' + option.product_option_id + '][]" value="'+ $(this).attr("value") +'">');
+							$("#order_product_options_"+ order_product['order_product_id']).append(newElement);
+							$("#order_product_options_"+ order_product['order_product_id']).append("<br>");
+							newElement = "";
+						});
+					}					
+					
+					// Loop Through Option Values
+					$.each($(this).attr("product_option_values"),function(index,value){
+						if(option.type == 'select'){												
+							$(newElement)
+         						.append($("<option></option>")
+         						.attr("value",$(this).attr("product_option_value_id"))
+         						.text($(this).attr("name")));						
+							$(newElement).val(current[0].product_option_value_id);
+						}
+
+						if(option.type == 'radio' || option.type == 'checkbox'){
+							
+							if( option.type == 'radio'){
+								newElement = $('<input form="order_product_edit" type="'+ option.type +
+									'" name="option_id[' + option.product_option_id + ']" value="'+
+									$(this).attr("product_option_value_id") +'"><label>' + $(this).attr("name") + '</label>');
+							}else{
+								newElement = $('<input form="order_product_edit" type="'+ option.type +
+									'" name="option_id[' + option.product_option_id + '][]" value="'+
+									$(this).attr("product_option_value_id") +'"><label>' + $(this).attr("name") + '</label>');
+							}
+								
+							// Find Current Selection
+							product_option_value_id = $(this).attr("product_option_value_id");
+							$.each(current,function(index,value){
+								if($(this).attr("product_option_value_id") == product_option_value_id){
+									$(newElement).prop('checked', true);
+								}
+							});
+							
+							// Add Element
+							$("#order_product_options_"+ order_product['order_product_id']).append(newElement);
+							$("#order_product_options_"+ order_product['order_product_id']).append("<br>");
+							newElement = "";
+							
+						}
+															
+					});
+					
+					// Element to DOM and Close DIV
+					$("#order_product_options_"+ order_product['order_product_id']).append(newElement);
+					$("#order_product_options_"+ order_product['order_product_id']).append("</span><div><br>");
+				});
+				
+				// Show Product Name For Edit
+				current_name = $("#name_edit_"+ order_product['order_product_id']).html();
+				$("#name_edit_"+ order_product['order_product_id']).html('<input type="text" style="width:95%" form="order_product_edit" name="name" value="'+ current_name +'">');
+				$("#name_edit_"+ order_product['order_product_id']).append('<input type="hidden" form="order_product_edit" name="order_product_id" value="'+order_product_id+'">');
+				
+				// Show Model For Edit
+				current_model = $("#model_edit_"+ order_product['order_product_id']).html();
+				$("#model_edit_"+ order_product['order_product_id']).html('<input type="text" style="width:95%" form="order_product_edit" name="model" value="'+ current_model +'">');
+									
+				// Show Qty For Edit
+				current_qty = $("#qty_edit_"+ order_product['order_product_id']).html();
+				$("#qty_edit_"+ order_product['order_product_id']).html('<input type="text" form="order_product_edit" name="qty" value="'+ current_qty +'">');
+				
+				// Show Unit Price For Edit
+				current_ppp = $("#unit_price_edit_"+ order_product['order_product_id']).html();
+				$("#unit_price_edit_"+ order_product['order_product_id']).html('<input type="text" form="order_product_edit" name="ppp"><br>*Only enter a price if you want to<br>override auto calculation.<br>Type Free for zero.');			
+
+				// Change Form Submit Action Path
+				$("#order_product_edit").attr("action", "index.php?route=sale/order_product_edit/getProductOptions&token=<?php echo $token; ?>&order_product_id=" +order_product_id);
+							
+				// Change Edit Product Button
+				$("#product_edit_button_"+ order_product['order_product_id']).attr("onclick", "$('#order_product_edit').submit();");
+				$("#product_edit_button_"+ order_product['order_product_id']).html("Save Update");								
+				
+				// Attach Selectors
+				$('.date').datepicker({dateFormat: 'yy-mm-dd'});
+				$('.datetime').datetimepicker({
+					dateFormat: 'yy-mm-dd',
+					timeFormat: 'h:m'
+				});
+				$('.time').timepicker({timeFormat: 'h:m'});
+				
+				// Hide Other Buttons
+				$('a[id^="product_edit_button"]').each(function() {
+					if($(this).attr("id") != "product_edit_button_"+ order_product['order_product_id']){
+						$(this).hide();
+					}
+				});
+				$("#save_btn").hide();
+			}
+		});
+	});
+});
+<!--order product edit -->
+// Update Shipping Price
+$("#tab-total").on("click","a[id='add_line_item']",function(){
+	$.ajax({
+		type:	'POST',
+		url:	'index.php?route=sale/order_product_edit/addLineItem&token=<?php echo $token; ?>',
+		data:	{ 
+			order_id: 		<?php echo $order_id; ?>, 
+			description: 	$('#line_item_description').val(),
+			price:			$('#line_item_price').val(),
+		},
+		success: function(data){
+			// If using Mijo Shop Uncomment the Line Below and Comment the two Below that
+			//location.reload();
+			console.log(data);				
+			addTotals(jQuery.parseJSON(data));
+		}
+	});	
+});
+
+$("#tab-total").on("click","a[name='delete_line_item']",function(){
+	$.ajax({
+		type:	'POST',
+		url:	'index.php?route=sale/order_product_edit/removeLineItem&token=<?php echo $token; ?>',
+		data:	{ 
+			order_id: 		<?php echo $order_id; ?>, 
+			order_total_id:	$(this).siblings('input[name*="order_total_id"]').val(),
+		},
+		success: function(data){		
+			// If using Mijo Shop Uncomment the Line Below and Comment the One Below that
+			//location.reload();				
+			addTotals(jQuery.parseJSON(data));
+		}
+	});	
+});
+
+// Update Shipping Price
+$("#tab-total").on("click","a[id='edit_shipping']",function(){
+	if(!$('#new_shipping_price').length){
+		$(this).next("span").html('Method: <input id="new_shipping_method" type="text" value="'+ $(this).next("span").html().slice(0,-1) +'" />');
+		$(this).closest("td").next().html('Price: <input id="new_shipping_price" type="text" value="'+ $(this).closest("td").next().html() +'" />');
+		$(this).html("[ Save ]")		
+	}else{
+		$.ajax({
+			type:	'POST',
+			url:	'index.php?route=sale/order_product_edit/updateShipping&token=<?php echo $token; ?>',
+			data:	{ 
+				order_total_id: $(this).siblings('input[name*="order_total_id"]').val(), 
+				order_id: <?php echo $order_id; ?>, 
+				title: $('#new_shipping_method').val(),
+				value: $('#new_shipping_price').val(),
+			},
+			success: function(data){
+				// If using Mijo Shop Uncomment the Line Below and Comment the Two Below that
+				//location.reload();
+				console.log(data);				
+				addTotals(jQuery.parseJSON(data));
+			}
+		});
+	}
+});
+function addTotals(total_info){
+	
+	// Remove Old Order Totals
+	$('tr[id^="total-row"]').remove();
+	$.each(total_info,function(index,value){
+		if($(this).attr("code") == "shipping"){ var title = '<a id="edit_shipping">[ Edit ]</a> <span>' + $(this).attr("title") + ':</span>'; 
+			}else if ($(this).attr("code") == "line_item"){ var title = '<a name="delete_line_item">[ Remove ]</a> <span>' + $(this).attr("title") + ':</span>'; 			
+			}else{ var title = $(this).attr("title") + ':';
+		}
+						
+		// Create Row Object
+		var row = $('<tr id="total-row'+index+'"><td class="right" colspan="4">'+title+'<input type="hidden" name="order_total['+index+'][order_total_id]" value="'+$(this).attr("order_total_id")+'" /><input type="hidden" name="order_total['+index+'][code]" value="'+$(this).attr("code")+'" /><input type="hidden" name="order_total['+index+'][title]" value="'+$(this).attr("title")+'" /><input type="hidden" name="order_total['+index+'][text]" value="'+$(this).attr("text")+'" /><input type="hidden" name="order_total['+index+'][value]" value="'+$(this).attr("value")+'" /><input type="hidden" name="order_total['+index+'][sort_order]" value="'+$(this).attr("sort_order")+'" /></td><td class="right">'+$(this).attr("value")+'</td></tr>');
+					
+		// Append
+		$('#add_new_line_item_row').before(row);		
+					
+	});		
+}
+<!--order product edit -->]]></add>		
+		</operation>					
+	</file>
+	
+</modification>

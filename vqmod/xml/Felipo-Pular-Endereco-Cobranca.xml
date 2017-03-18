@@ -1,0 +1,20 @@
+<modification>
+	<id><![CDATA[Code Market - Pular Endereço de Cobrança - Passo 2 Checkout]]></id>
+	<version><![CDATA[1]]></version>
+	<vqmver><![CDATA[2.4.1]]></vqmver>
+	<author><![CDATA[Felipo Antonoff - codemarket.com.br]]></author>
+	<file path="catalog/view/theme/*/template/checkout/" name="checkout.tpl">
+	<operation>
+			<search position="replace" index="2"><![CDATA[<div id="payment-address">]]></search>
+			<add><![CDATA[
+				<div id="payment-address" style="display: none;">
+			]]></add>
+		</operation>
+		<operation>
+			<search position="replace" index="1"><![CDATA[$('#payment-address .checkout-content').slideDown('slow');]]></search>
+			<add><![CDATA[
+				$('#button-payment-address').click();
+			]]></add>
+		</operation>
+	</file>
+</modification>

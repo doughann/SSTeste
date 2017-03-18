@@ -1,0 +1,638 @@
+<modification>
+    <id>Delivery Dates Wizard</id>
+    <version>1.0</version>
+    <vqmver>2.4.1</vqmver>
+    <author>Musaffar Patel</author>
+
+    <file name="catalog/view/theme/*/template/checkout/checkout.tpl">
+        <operation>
+            <search position="replace"><![CDATA[ data: $('#shipping-method input[type=\'radio\']:checked, #shipping-method textarea'), ]]></search>
+            <add><![CDATA[
+                    data: $('#shipping-method input[type=\'radio\']:checked, #shipping-method textarea, input[name=\'DDW_date\'], input[name=\'DDW_time_slot\']'),
+            ]]></add>
+        </operation>
+
+        <operation>
+            <search position="before" offset="2" index="4"><![CDATA[ url: 'index.php?route=checkout/shipping_address', ]]></search>
+            <add><![CDATA[
+            ]]></add>
+        </operation>
+    </file>
+
+    <file name="catalog/view/theme/*/template/checkout/shipping_method.tpl">
+        <operation>
+            <search position="before" offset="1"><![CDATA[ <textarea name="comment" rows="8" style="width: 98%;"><?php echo $comment; ?></textarea> ]]></search>
+            <add><![CDATA[
+                    <?php echo $ddw_calendar;?>
+            ]]></add>
+        </operation>
+    </file>
+
+    <file name="catalog/controller/checkout/shipping_method.php">
+        <operation>
+            <search position="after"><![CDATA[ class ControllerCheckoutShippingMethod extends Controller { ]]></search>
+            <add><![CDATA[
+                /** @var ModelDeliveryDatesWizardDeliveryDatesWizard */
+                public $ddwModel;
+            ]]>
+            </add>
+        </operation>
+
+        <operation>
+            <search position="after"><![CDATA[<?php]]></search>
+            <add><![CDATA[
+                /* Add DDW Front end Dependencies */
+                include_once(rtrim(DIR_SYSTEM, "/")."/library/deliverydateswizard/bootstrap.php");
+            ]]>
+            </add>
+        </operation>
+
+        <operation>
+            <search position="before" offset="1">public function validate() {</search>
+            <add><![CDATA[
+                /**
+                 * @var $blockedDates Array Of DDWBlockedDate
+                 * @var $date Timestamp
+                 * @return boolean
+                 */
+                private function _isDateBlocked($blockedDates, $date) {
+                    $blocked = false;
+
+                    /* Weekdays Blocked check */
+                    $current_week_day = date("w", $date);
+                    if (in_array($current_week_day, explode(",",$this->ddwModel->ddw->weekdays))) return true;
+                    else return false;
+
+                    if (!is_array($blockedDates)) return false;
+
+                    foreach($blockedDates as $key=>$blocked_date) {
+                        if ($blocked_date->type == DDWDateType::Single) {
+                            $y = date('Y', strtotime($blocked_date->date_start));
+                            $m = date('m', strtotime($blocked_date->date_start));
+                            $d = date('d', strtotime($blocked_date->date_start));
+                            $blocked_date->date_end = date('Y-m-d H:i:s',strtotime("$y-$m-$d 23:59:59"));
+                        }
+
+                        $timestamp_start = strtotime($blocked_date->date_start);
+                        $timestamp_end = strtotime($blocked_date->date_end);
+
+                        if ($date >= $timestamp_start && $date <= $timestamp_end) {
+                            $blocked = true;
+                        }
+
+                        /* Recurring block check */
+                        if ($blocked_date->recurring) {
+                            $recurring_timestamp_start = date('Y-m-d H:i:s', strtotime(
+                                date('Y')."-".date("m", $timestamp_start)."-".date("d", $timestamp_start)." 00:00:00"
+                            ));
+                            $recurring_timestamp_end = date('Y-m-d H:i:s', strtotime(
+                                date('Y')."-".date("m", $timestamp_end)."-".date("d", $timestamp_end)." 23:59:00"
+                            ));
+                            if ($date >= $recurring_timestamp_start && $date <= $recurring_timestamp_end) $blocked = true;
+                        }
+
+                        return $blocked;
+                    }
+                }
+
+                public function DDW_GetBlockedDates() {
+                        $min_days = 0;
+                        $start_date = date('Y-m-d');
+                        $calendar_blocked_dates = array(); //of DDWCalendarBlockedDates
+
+                        if (!isset($this->request->post['shipping_method_code'])) $shipping_method_code = "";
+                        else $shipping_method_code = $this->request->post['shipping_method_code'];
+
+                        $this->load->model('deliverydateswizard/deliverydateswizard');
+                        $this->ddwModel = $this->model_deliverydateswizard_deliverydateswizard;
+                        $this->ddwModel->load($shipping_method_code);
+
+                        /* If no settings defined, load settings for "all" */
+                        if ($this->ddwModel->ddw->shipping_method_code == "") {
+                            $this->ddwModel->load("");
+                                $shipping_method_code = "";
+                        }
+
+                        $min_days = $this->ddwModel->ddw->min_days;
+                        $blockedDates = $this->ddwModel->getBlockedDates($shipping_method_code);
+
+                        /* Determine if cut off time requires Min Days to be blocked from today onwards  */
+                        if ($this->ddwModel->ddw->cut_off_time_enabled == 1) {
+                            $hours = date("H");
+                            $minutes = date("i");
+                            if ($hours >= $this->ddwModel->ddw->cut_off_time_hours && $minutes > $this->ddwModel->ddw->cut_off_time_minutes)
+                                $min_days ++;
+                        }
+
+                        /* Block all days up to min_days from order date (today) */
+                        for ($i=0; $i<$min_days; $i++) {
+                            $loop_date = strtotime("+$i day", strtotime($start_date));
+                            $calendarBlockedDate = new DDWCalendarBlockedDate();
+                            $calendarBlockedDate->date = date('Y-m-d', $loop_date);
+                            $calendarBlockedDate->blocked = true;
+                            $calendar_blocked_dates[] = $calendarBlockedDate;
+                        }
+
+                        /* Loop through dates */
+                        for ($i=0;$i<30;$i++) {
+                            $loop_date = strtotime("+$i day", strtotime($start_date));
+                            if ($this->_isDateBlocked($blockedDates, $loop_date)) {
+                                $calendarBlockedDate = new DDWCalendarBlockedDate();
+                                $calendarBlockedDate->date = date('Y-m-d', $loop_date);
+                                $calendarBlockedDate->blocked = true;
+                                $calendar_blocked_dates[] = $calendarBlockedDate;
+                            }
+                        }
+
+                        /* If blocked */
+                        if ($this->ddwModel->ddw->enabled != 1) {
+                            $calendar_blocked_dates = array();
+                            $calendar_blocked_dates['enabled'] = false;
+                        }
+
+                        print json_encode($calendar_blocked_dates);
+                    }
+            ]]>
+            </add>
+        </operation>
+
+        <operation>
+            <search position="before" offset="1">if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/checkout/shipping_method.tpl')) {</search>
+            <add><![CDATA[
+                $ddw_controller = new DDWLibController($this->registry);
+                $ddw_controller->render_widget($this);
+            ]]>
+            </add>
+        </operation>
+
+        <operation>
+            <search position="after"><![CDATA[ $this->session->data['comment'] = strip_tags($this->request->post['comment']); ]]></search>
+            <add><![CDATA[
+                $this->session->data['ddw_date'] = $this->request->post['DDW_date'];
+                $this->session->data['ddw_time_slot'] = $this->request->post['DDW_time_slot'];
+            ]]>
+            </add>
+        </operation>
+    </file>
+
+    <file name="catalog/controller/checkout/confirm.php">
+        <operation>
+            <search position="before"><![CDATA[ $data['comment'] = $this->session->data['comment']; ]]></search>
+            <add><![CDATA[
+                    $data['ddw_date'] = $this->session->data['ddw_date'];
+                    $data['ddw_time_slot'] = $this->session->data['ddw_time_slot'];
+            ]]></add>
+        </operation>
+
+        <operation>
+            <search position="before"><![CDATA[ $this->session->data['order_id'] = $this->model_checkout_order->addOrder($data); ]]></search>
+            <add><![CDATA[
+                if (isset($data['ddw_date']))
+                    $data['ddw_delivery_date'] = $data['ddw_date'];
+
+                if (!isset($data['ddw_time_slot']))
+                    $data['ddw_time_slot'] = "";
+
+            ]]></add>
+        </operation>
+    </file>
+
+    <file name="catalog/model/checkout/order.php">
+        <operation>
+            <search position="after"><![CDATA[ $order_id = $this->db->getLastId(); ]]></search>
+            <add><![CDATA[
+                    if (isset($data['ddw_delivery_date'])) {
+                        $sql = "UPDATE ".DB_PREFIX."order
+                                SET
+                                    ddw_delivery_date = '".$data['ddw_delivery_date']."',
+                                    ddw_time_slot = '".$data['ddw_time_slot']."'
+                                    WHERE order_id = ".(int)$order_id;
+                        $this->db->query($sql);
+                    }
+            ]]></add>
+        </operation>
+
+        <!-- For mail/order.tpl -->
+        <operation>
+            <search position="after" ><![CDATA[ $template->data['totals'] = $order_total_query->rows; ]]></search>
+            <add><![CDATA[
+                    if (!isset($this->ddwModel))
+                        if (!$this->ddwModel instanceof DDWModel) {
+                            include_once(rtrim(DIR_SYSTEM, "/")."/library/deliverydateswizard/bootstrap.php");
+                            $this->load->model('deliverydateswizard/deliverydateswizard');
+                            $this->ddwModel = $this->model_deliverydateswizard_deliverydateswizard;
+                        }
+
+                    $ddw_delivery_date = $this->ddwModel->get_order_delivery_date($order_id);
+                    $ddw_delivery_time = $this->ddwModel->get_order_delivery_time($order_id);
+                    if (!$ddw_delivery_date) $ddw_delivery_date = "";
+                    if (!$ddw_delivery_time) $ddw_delivery_time = "";
+                    else
+                        $ddw_delivery_date = date($this->language->get('date_format_short'), strtotime($ddw_delivery_date));
+                    $template->data['ddw_delivery_date'] = $ddw_delivery_date;
+                    $template->data['ddw_delivery_time'] = $ddw_delivery_time;
+
+                    /* Translations */
+                    $translations = $this->ddwModel->get_all_translations();
+                    foreach($translations as $key=>$translation) {
+                        if ($translation->shipping_method_code == "")
+                            $texts[$translation->name] = $translation->text;
+                    }
+                    $template->data['ddw_texts'] = $texts;
+
+            ]]></add>
+        </operation>
+    </file>
+
+
+    <!-- Display details in admin -->
+
+    <file name="admin/view/template/sale/order_info.tpl">
+        <operation>
+            <search position="after" offset="2"><![CDATA[ <td><?php echo $shipping_method; ?></td> ]]></search>
+            <add><![CDATA[
+                    <tr>
+                        <td><?php echo isset($ddw_texts['textlabel']) ? $ddw_texts['textlabel'] : "Delivery Date" ;?></td>
+                        <td>
+                            <?php echo $ddw_delivery_date;?> <?php echo $ddw_delivery_time;?>
+                        </td>
+                    </tr>
+            ]]></add>
+        </operation>
+    </file>
+
+    <file name="catalog/view/theme/*/template/mail/order.tpl">
+        <operation>
+            <search position="before" ><![CDATA[ <?php if ($shipping_method) { ?> ]]></search>
+            <add><![CDATA[
+                    <b><?php echo $ddw_texts['textlabel'] != "" ? $ddw_texts['textlabel'] : "Delivery Date" ;?></b>
+                    <?php echo $ddw_delivery_date;?> <?php echo $ddw_delivery_time;?><br>
+            ]]></add>
+        </operation>
+    </file>
+
+    <file name="admin/view/template/sale/order_invoice.tpl">
+        <operation>
+            <search position="after" offset="2"><![CDATA[ <td><?php echo $order['shipping_method']; ?></td> ]]></search>
+            <add><![CDATA[
+                    <tr>
+                        <td><b><?php echo $ddw_texts['textlabel'] != "" ? $ddw_texts['textlabel'] : "Delivery Date" ;?></b></td>
+                        <td>
+                            <?php echo $order['ddw_delivery_date'];?>
+                            <?php echo $order['ddw_delivery_time'];?>
+                        </td>
+                    </tr>
+            ]]></add>
+        </operation>
+    </file>
+
+    <file name="admin/controller/sale/order.php">
+        <operation>
+            <search position="before" offset="1"><![CDATA[ public function info() { ]]></search>
+            <add><![CDATA[
+                    public function ddw_model_load() {
+                        if (!isset($this->ddwModel))
+                            if (!$this->ddwModel instanceof DDWModel) {
+                                include_once("../system/library/deliverydateswizard/bootstrap.php");
+                                $this->load->model('deliverydateswizard/deliverydateswizard');
+                                $this->ddwModel = $this->model_deliverydateswizard_deliverydateswizard;
+                            }
+                    }
+
+                    private function _get_ddw_delivery_date($order_id) {
+                        $ddw_delivery_date = $this->ddwModel->get_order_delivery_date($this->request->get['order_id']);
+                        if (!$ddw_delivery_date) $ddw_delivery_date = "";
+                        else {
+                            $ddw_delivery_date = date($this->language->get('date_format_short'), strtotime($ddw_delivery_date));
+                        }
+                        return $ddw_delivery_date;
+                    }
+
+                    private function _get_ddw_delivery_time($order_id) {
+                        $ddw_delivery_time = $this->ddwModel->get_order_delivery_time($this->request->get['order_id']);
+                        if (!$ddw_delivery_time) $ddw_delivery_time = "";
+                        else {
+                            $ddw_delivery_time = " - ".$ddw_delivery_time;
+                        }
+                        return $ddw_delivery_time;
+                    }
+
+            ]]></add>
+        </operation>
+
+        <operation>
+            <search position="after" offset="2"><![CDATA[ public function info() { ]]></search>
+            <add><![CDATA[
+                    $this->ddw_model_load();
+                    if (isset($this->request->get['order_id'])) {
+                        $ddw_delivery_date = $this->_get_ddw_delivery_date($this->request->get['order_id']);
+                        $ddw_delivery_time = $this->_get_ddw_delivery_time($this->request->get['order_id']);
+                    }
+                    else {
+                        $ddw_delivery_date = "";
+                        $ddw_delivery_time = "";
+                    }
+                    $this->data['ddw_delivery_date'] = $ddw_delivery_date;
+                    $this->data['ddw_delivery_time'] = $ddw_delivery_time;
+            ]]></add>
+        </operation>
+
+        <operation>
+            <search position="after" offset="2"><![CDATA[ public function invoice() { ]]></search>
+            <add><![CDATA[
+                    $this->ddw_model_load();
+            ]]></add>
+        </operation>
+
+        <operation>
+            <search position="after" offset="2"><![CDATA[ foreach ($orders as $order_id) { ]]></search>
+            <add><![CDATA[
+                /* Translations */
+                $language_id = (int)$this->config->get('config_language_id');
+
+                $translations = $this->ddwModel->get_all_translations();
+                foreach($translations as $key=>$translation) {
+                    if ($translation->language_id == $language_id)
+                        $texts[$translation->name] = $translation->text;
+                }
+                $this->data['ddw_texts'] = $texts;
+
+                $ddw_delivery_date = $this->_get_ddw_delivery_date($order_id);
+                $ddw_delivery_time = $this->_get_ddw_delivery_time($order_id);
+            ]]></add>
+        </operation>
+
+        <operation>
+            <search position="after"><![CDATA[ 'shipping_method'    => $order_info['shipping_method'], ]]></search>
+            <add><![CDATA[
+                'ddw_delivery_date' => $ddw_delivery_date,
+                'ddw_delivery_time' => $ddw_delivery_time,
+            ]]></add>
+        </operation>
+    </file>
+
+    <!-- Start: Delivery date columns in order report
+    <file name="admin/controller/sale/order.php">
+        <operation>
+            <search position="after"><![CDATA[ protected function getList() { ]]></search>
+            <add><![CDATA[
+                    ]]></add>
+        </operation>
+
+        <operation>
+            <search position="before"><![CDATA[ if (isset($this->request->get['filter_date_added'])) { ]]></search>
+            <add><![CDATA[
+                if (isset($this->request->get['filter_ddw_delivery_date'])) {
+                    $filter_ddw_delivery_date = $this->request->get['filter_ddw_delivery_date'];
+                } else {
+                    $filter_ddw_delivery_date = null;
+                }
+            ]]></add>
+        </operation>
+
+        <operation>
+            <search position="after" offset="3"><![CDATA[ $url .= '&filter_date_modified=' . $this->request->get['filter_date_modified']; ]]></search>
+            <add><![CDATA[
+                if (isset($this->request->get['filter_ddw_delivery_date'])) {
+                    $url .= '&filter_filter_ddw_delivery_date=' . $this->request->get['filter_filter_ddw_delivery_date'];
+                }
+            ]]></add>
+        </operation>
+
+        <operation>
+            <search position="after"><![CDATA[ 'selected'      => isset($this->request->post['selected']) && in_array($result['order_id'], $this->request->post['selected']), ]]></search>
+            <add><![CDATA[
+                'ddw_delivery_date' => (int)$result['ddw_delivery_date'] > 0 ? date('m-d-Y', strtotime($result['ddw_delivery_date'])) : "",
+            ]]></add>
+        </operation>
+
+        <operation>
+            <search position="before"><![CDATA[ $order_total = $this->model_sale_order->getTotalOrders($data); ]]></search>
+            <add><![CDATA[
+                $data['filter_ddw_delivery_date'] = $filter_ddw_delivery_date;
+            ]]></add>
+        </operation>
+
+        <operation>
+            <search position="after"><![CDATA[ $this->data['filter_date_modified'] = $filter_date_modified; ]]></search>
+            <add><![CDATA[
+                $this->data['filter_ddw_delivery_date'] = $filter_ddw_delivery_date;
+            ]]></add>
+        </operation>
+
+        <operation>
+            <search position="after"><![CDATA[ $this->data['sort_date_modified'] = $this->url->link('sale/order', 'token=' . $this->session->data['token'] . '&sort=o.date_modified' . $url, 'SSL'); ]]></search>
+            <add><![CDATA[
+                $this->data['sort_ddw_delivery_date'] = $this->url->link('sale/order', 'token=' . $this->session->data['token'] . '&sort=o.ddw_delivery_date' . $url, 'SSL');
+            ]]></add>
+        </operation>
+		
+    </file>
+
+    <file name="admin/view/template/sale/order_list.tpl">
+        <operation>
+            <search position="before"><![CDATA[ <td class="left"><?php if ($sort == 'o.date_added') { ?> ]]></search>
+            <add><![CDATA[
+                <td class="left">
+                    <?php if ($sort == 'o.ddw_delivery_date') { ?>
+                        <a href="<?php echo $sort_ddw_delivery_date; ?>" class="<?php echo strtolower($order); ?>">Delivery Date</a>
+                    <?php } else { ?>
+                        <a href="<?php echo $sort_ddw_delivery_date; ?>">Delivery Date</a>
+                    <?php } ?>
+                </td>
+            ]]></add>
+        </operation>
+        <operation>
+            <search position="before"><![CDATA[ <td><input type="text" name="filter_date_added" value="<?php echo $filter_date_added; ?>" size="12" class="date" /></td> ]]></search>
+            <add><![CDATA[
+                <td><input type="text" name="filter_ddw_delivery_date" value="<?php echo $filter_ddw_delivery_date; ?>" size="12" class="date" /></td>
+            ]]></add>
+        </operation>
+        <operation>
+            <search position="before"><![CDATA[ <td class="left"><?php echo $order['date_added']; ?></td> ]]></search>
+            <add><![CDATA[
+                <td class="left"><?php echo $order['ddw_delivery_date']; ?></td>
+            ]]></add>
+        </operation>
+    </file>
+
+    <file name="admin/model/sale/order.php">
+        <operation>
+            <search position="after"><![CDATA[ $sql = "SELECT o.order_id, CONCAT(o.firstname, ' ', o.lastname) AS customer, (SELECT os.name FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS status, o.total, o.currency_code, o.currency_value, o.date_added, o.date_modified FROM `" . DB_PREFIX . "order` o"; ]]></search>
+            <add><![CDATA[
+                    $sql = "SELECT o.order_id, CONCAT(o.firstname, ' ', o.lastname) AS customer, (SELECT os.name FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS status, o.total, o.currency_code, o.currency_value, o.date_added, o.date_modified, o.ddw_delivery_date FROM `" . DB_PREFIX . "order` o";
+            ]]></add>
+        </operation>
+
+        <operation>
+            <search position="after" offset="2"><![CDATA[ $sort_data = array( ]]></search>
+            <add><![CDATA[
+                    'o.ddw_delivery_date',
+            ]]></add>
+        </operation>
+
+        <operation>
+            <search position="before" offset="1"><![CDATA[ if (!empty($data['filter_total'])) { ]]></search>
+            <add><![CDATA[
+                if (!empty($data['filter_ddw_delivery_date'])) {
+                    $sql .= " AND DATE(ddw_delivery_date) = DATE('" . $this->db->escape($data['filter_ddw_delivery_date']) . "')";
+                }
+            ]]></add>
+        </operation>
+    </file> -->
+
+    <!-- End: Delivery date columns in order report -->
+
+
+    <!-- Start: Compatability with Ajax Quick Checkout -->
+    <file name="catalog/controller/module/quickcheckout.php">
+        <operation>
+            <search position="after"><![CDATA[ class ControllerModuleQuickcheckout extends Controller { ]]></search>
+            <add><![CDATA[
+                /** @var ModelDeliveryDatesWizardDeliveryDatesWizard */
+                public $ddwModel;
+            ]]>
+            </add>
+        </operation>
+
+        <operation>
+            <search position="after"><![CDATA[<?php]]></search>
+            <add><![CDATA[
+                /* Add DDW Front end Dependencies */
+                include_once(rtrim(DIR_SYSTEM, "/")."/library/deliverydateswizard/bootstrap.php");
+            ]]>
+            </add>
+        </operation>
+
+        <operation info="Render the widget for the shipping method block">
+            <search position="before"><![CDATA[ if(file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/quickcheckout/shipping_method.tpl')) { ]]></search>
+            <add><![CDATA[
+                $ddw_controller = new DDWLibController($this->registry);
+                $ddw_controller->render_widget($this);
+            ]]></add>
+        </operation>
+    </file>
+
+    <file name="catalog/controller/module/quickcheckout.php">
+        <operation info="store the date and time fields in session data to be used later by the model">
+            <search position="after"><![CDATA[ $data['comment'] = (isset($this->session->data['confirm']['comment'])) ? $this->session->data['confirm']['comment'] : ''; ]]></search>
+            <add><![CDATA[
+                if (isset($this->request->post['DDW_date']))
+                    $this->session->data['ddw_delivery_date'] = $this->request->post['DDW_date'];
+
+                if (isset($this->request->post['DDW_time_slot']))
+                    $this->session->data['ddw_time_slot'] = $this->request->post['DDW_time_slot'];
+            ]]></add>
+        </operation>
+
+        <operation info="copy DDW data from session to $data">
+            <search position="after"><![CDATA[ $data = array(); ]]></search>
+            <add><![CDATA[
+                if (isset($this->session->data['ddw_delivery_date']))
+                    $data['ddw_delivery_date'] = $this->session->data['ddw_delivery_date'];
+
+                if (isset($this->session->data['ddw_time_slot']))
+                    $data['ddw_time_slot'] = $this->session->data['ddw_time_slot'];
+            ]]></add>
+        </operation>
+
+    </file>
+
+    <file name="catalog/model/quickcheckout/order.php">
+        <operation info="Update the order record with the ddw data">
+            <search position="before"><![CDATA[ return $order_id; ]]></search>
+            <add><![CDATA[
+                if (isset($data['ddw_delivery_date'])) {
+                    $sql = "UPDATE ".DB_PREFIX."order
+                            SET
+                                ddw_delivery_date = '".$data['ddw_delivery_date']."',
+                                ddw_time_slot = '".$data['ddw_time_slot']."'
+                            WHERE order_id = ".(int)$order_id;
+                    $this->db->query($sql);
+                }
+            ]]></add>
+        </operation>
+    </file>
+
+    <file name="catalog/view/theme/*/template/quickcheckout/shipping_method.tpl">
+        <operation info="Display the widget below shipping methods">
+            <search position="bottom"></search>
+            <add><![CDATA[
+                <?php echo $ddw_calendar;?>
+            ]]></add>
+        </operation>
+    </file>
+    <!-- End: Compatability with Ajax Quick Checkout -->
+
+
+    <!-- Start: Compatibility with Order Entry System -->
+    <file name="admin/controller/sale/order_entry.php">
+        <operation info="Load dependencies">
+            <search position="before"><![CDATA[ class ControllerSaleOrderEntry extends Controller { ]]></search>
+            <add><![CDATA[
+                /* Add DDW Front end Dependencies */
+                include_once(rtrim(DIR_SYSTEM, "/")."/library/deliverydateswizard/bootstrap.php");
+            ]]>
+            </add>
+        </operation>
+
+        <operation info="Get Widget Function">
+            <search position="before"><![CDATA[ public function index() { ]]></search>
+            <add><![CDATA[
+                    public function load_ddw_widget() {
+                        $ddw_controller = new DDWLibController($this->registry);
+
+                        $this->load->model('deliverydateswizard/deliverydateswizard');
+                        $this->ddwModel = $this->model_deliverydateswizard_deliverydateswizard;
+                        $ddw_order = $this->ddwModel->get_order_ddw($this->session->data['edit_order']);
+
+                        if ($ddw_order != false)
+                            $this->data['ddw_order'] = $ddw_order;
+                        else
+                            $this->data['ddw_order'] = false;
+
+                        $ddw_controller->render_widget($this);
+                    }
+            ]]>
+            </add>
+        </operation>
+
+        <operation info="Display Widget">
+            <search position="before" offset="3"><![CDATA[ if (isset($this->session->data['custom_ship'])) { ]]></search>
+            <add><![CDATA[
+                    $this->load_ddw_widget();
+                    $totals_html .= $this->data['ddw_calendar'];
+            ]]>
+            </add>
+        </operation>
+
+        <operation info="Add to Order data Array">
+            <search position="before"><![CDATA[ $this->model_sale_order_entry->editOrder($order_id, $data); ]]></search>
+            <add><![CDATA[
+                $data['ddw_delivery_date'] = $this->session->data['ddw_delivery_date'];
+                $data['ddw_time_slot'] = $this->session->data['ddw_time_slot'];
+            ]]>
+            </add>
+        </operation>
+    </file>
+
+    <file name="admin/model/sale/order_entry.php">
+        <operation info="Load dependencies">
+            <search position="after"><![CDATA[ $country_info = $this->model_localisation_country->getCountry($data['shipping_country_id']); ]]></search>
+            <add><![CDATA[
+                    $this->log->write($data, true);
+                    if (isset($data['ddw_delivery_date'])) {
+                        $sql = "UPDATE ".DB_PREFIX."order
+                                SET
+                                    ddw_delivery_date = '".$data['ddw_delivery_date']."',
+                                    ddw_time_slot = '".$data['ddw_time_slot']."'
+                                    WHERE order_id = ".(int)$order_id;
+                        $this->db->query($sql);
+                    }
+            ]]>
+            </add>
+        </operation>
+    </file>
+    <!-- End: Compatibility with Order Entry System -->
+
+</modification>

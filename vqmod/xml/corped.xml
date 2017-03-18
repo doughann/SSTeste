@@ -1,0 +1,207 @@
+<modification>
+	
+	<id>Cor do Pedido</id>
+	<version>1.0.0</version>
+	<vqmver>2.1.5</vqmver>
+	<author>Jeann</author>
+
+	<file name="admin/view/template/localisation/order_status_form.tpl">
+                <operation>
+			<search position="after" ><![CDATA[
+			 <?php echo $header; ?>
+			]]></search>
+			<add><![CDATA[
+                        <?php // inicio módulo corped ?>
+                        <link rel="stylesheet" href="view/javascript/colorpicker/css/colorpicker.css" type="text/css" />
+                        <link rel="stylesheet" media="screen" type="text/css" href="view/javascript/colorpicker/css/layout.css" />
+                        <script type="text/javascript" src="view/javascript/colorpicker/js/colorpicker.js"></script>
+                        <script type="text/javascript" src="view/javascript/colorpicker/js/eye.js"></script>
+                        <script type="text/javascript" src="view/javascript/colorpicker/js/utils.js"></script>
+                        <script type="text/javascript" src="view/javascript/colorpicker/js/layout.js?ver=1.0.2"></script>
+                          <?php // fim módulo corped?>
+                        ]]></add>  
+		</operation>
+		<operation>
+			<search position="before" ><![CDATA[
+			 </table>
+			]]></search>
+			<add><![CDATA[
+                        <?php // inicio módulo corped
+                        if ($this->config->get('corped_status')) {
+                        ?> 
+                          <tr>
+                            <td>Adicione uma nova cor ao status:</td>
+                            <td>
+                                <input type="hidden" id="corpedido" name="corpedido" value="<?php echo $order_status[$language['language_id']]['cor']; ?>">
+                                <p>
+                                <div id="colorSelector"><div style="background-color: #<?php echo $order_status[$language['language_id']]['cor']; ?>"></div></div>
+                                </p>
+                            </td>
+                          </tr>
+                          <?php } ?>
+                          <?php // fim módulo corped?>
+                        ]]></add>  
+		</operation>
+	</file>
+        <file name="admin/model/localisation/order_status.php">	 
+		<operation>
+			<search position="replace" ><![CDATA[
+			$this->db->query("INSERT INTO " . DB_PREFIX . "order_status SET order_status_id = '" . (int)$order_status_id . "', language_id = '" . (int)$language_id . "', name = '" . $this->db->escape($value['name']) . "'");
+			]]></search>
+			<add><![CDATA[
+                        if ($this->config->get('corped_status')) {
+                            $this->db->query("INSERT INTO " . DB_PREFIX . "order_status SET order_status_id = '" . (int)$order_status_id . "', language_id = '" . (int)$language_id . "', name = '" . $this->db->escape($value['name']) . "', cor = '" . $this->db->escape($data['corpedido']) . "' ");
+                        }else{
+                            $this->db->query("INSERT INTO " . DB_PREFIX . "order_status SET order_status_id = '" . (int)$order_status_id . "', language_id = '" . (int)$language_id . "', name = '" . $this->db->escape($value['name']) . "'");
+                        }
+                        ]]></add>  
+		</operation>
+                
+                <operation>
+			<search position="replace" ><![CDATA[
+                            $order_status_data[$result['language_id']] = array('name' => $result['name']);		
+                        ]]></search>
+			<add><![CDATA[   
+                            $order_status_data[$result['language_id']] = array('name' => $result['name'],'cor' => $result['cor']);	
+                        ]]></add>  
+		</operation>
+                
+	</file>
+        <file name="admin/controller/sale/order.php">	 
+		<operation>
+			<search position="after" ><![CDATA[
+			'status'        => $result['status'],
+			]]></search>
+			<add><![CDATA[
+                        'cor'        => ((isset($result['cor'])) ? $result['cor'] : '') ,
+                        ]]></add>  
+		</operation>
+	</file>
+        <file name="admin/model/sale/order.php">	 
+		<operation>
+			<search position="replace" ><![CDATA[
+                        $sql = "SELECT o.order_id, CONCAT(o.firstname, ' ', o.lastname) AS customer, (SELECT os.name FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS status, o.total, o.currency_code, o.currency_value, o.date_added, o.date_modified FROM `" . DB_PREFIX . "order` o";
+			]]></search>
+			<add><![CDATA[
+                        if ($this->config->get('corped_status')) {
+                            $sql = "SELECT o.order_id, CONCAT(o.firstname, ' ', o.lastname) AS customer,(SELECT os.cor FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS cor, (SELECT os.name FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS status, o.total, o.currency_code, o.currency_value, o.date_added, o.date_modified FROM `" . DB_PREFIX . "order` o";
+                        }else{
+                            $sql = "SELECT o.order_id, CONCAT(o.firstname, ' ', o.lastname) AS customer, (SELECT os.name FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS status, o.total, o.currency_code, o.currency_value, o.date_added, o.date_modified FROM `" . DB_PREFIX . "order` o";
+                        }
+                        ]]></add>  
+		</operation>
+	</file>
+        <file name="admin/view/template/sale/order_list.tpl">	 
+		<operation>
+			<search position="replace" offset="15"><![CDATA[
+                        <?php foreach ($orders as $order) { ?>
+			]]></search>
+			<add><![CDATA[
+                        <?php foreach ($orders as $order) { ?>
+                        <?php // inicio módulo corped
+                        if ($this->config->get('corped_status')) {
+                         
+                           $corped = 'background-color:#'.$order['cor'].';';
+                         }else{ 
+                           $corped = '';
+                         } ?>
+                        
+                        <tr>
+                          <td style="text-align: center;<?php echo $corped; ?>" ><?php if ($order['selected']) { ?>
+                            <input type="checkbox" name="selected[]" value="<?php echo $order['order_id']; ?>" checked="checked" />
+                            <?php } else { ?>
+                            <input type="checkbox" name="selected[]" value="<?php echo $order['order_id']; ?>" />
+                            <?php } ?></td>
+                          <td class="right" style="<?php echo $corped; ?>"><?php echo $order['order_id']; ?></td>
+                          <td class="left" style="<?php echo $corped; ?>"><?php echo $order['customer']; ?></td>
+                          <td class="left" style="<?php echo $corped; ?>"><?php echo $order['status']; ?></td>
+                          <td class="right" style="<?php echo $corped; ?>"><?php echo $order['total']; ?></td>
+                          <td class="left" style="<?php echo $corped; ?>"><?php echo $order['date_added']; ?></td>
+                          <td class="left" style="<?php echo $corped; ?>"><?php echo $order['date_modified']; ?></td>
+                          <td class="right" style="<?php echo $corped; ?>"><?php foreach ($order['action'] as $action) { ?>
+                            [ <a href="<?php echo $action['href']; ?>"><?php echo $action['text']; ?></a> ]
+                            <?php } ?></td>
+                        </tr>
+                        <? // fim módulo corped?>
+                        ]]></add>  
+		</operation>
+	</file>
+        <file name="admin/controller/localisation/order_status.php">	 
+		<operation>
+			<search position="after" ><![CDATA[
+                        'name'            => $result['name'] . (($result['order_status_id'] == $this->config->get('config_order_status_id')) ? $this->language->get('text_default') : null),
+			]]></search>
+			<add><![CDATA[
+                        'cor'            =>  ((isset($result['cor'])) ? $result['cor'] : '') ,    
+                        ]]></add>  
+		</operation>
+	</file>
+
+        <file name="admin/view/template/localisation/order_status_list.tpl">	 
+		<operation>
+			<search position="replace" offset="11"><![CDATA[
+                        <?php foreach ($order_statuses as $order_status) { ?>
+                        ]]></search>
+			<add><![CDATA[
+                        <?php foreach ($order_statuses as $order_status) { ?>
+                       <? // inicio módulo corped
+                        if ($this->config->get('corped_status')) {
+                           $corped = 'background-color:#'.$order_status['cor'].';';
+                         }else{ 
+                           $corped = '';
+                         } ?>
+                        
+                        <tr>
+                          <td style="text-align: center;<?php echo $corped; ?>"><?php if ($order_status['selected']) { ?>
+                            <input type="checkbox" name="selected[]" value="<?php echo $order_status['order_status_id']; ?>" checked="checked" />
+                            <?php } else { ?>
+                            <input type="checkbox" name="selected[]" value="<?php echo $order_status['order_status_id']; ?>" />
+                            <?php } ?></td>
+                          <td class="left" style="<?php echo $corped ;?>"><?php echo $order_status['name']; ?></td>
+                          <td class="right" style="<?php echo $corped ;?>"><?php foreach ($order_status['action'] as $action) { ?>
+                            [ <a href="<?php echo $action['href']; ?>"><?php echo $action['text']; ?></a> ]
+                            <?php } ?></td>
+                        </tr>
+                        <? // fim módulo corped?>
+                        ]]></add>  
+		</operation>
+	</file>
+        
+         <file name="admin/controller/common/home.php">	 
+		<operation>
+			<search position="after" ><![CDATA[
+			'status'     => $result['status'],
+			]]></search>
+			<add><![CDATA[
+                        'cor'        => ((isset($result['cor'])) ? $result['cor'] : '') ,
+                        ]]></add>  
+		</operation>
+	</file>
+        
+         <file name="admin/view/template/common/home.tpl">	 
+		<operation>
+			<search position="replace" offset="10"><![CDATA[
+			<?php foreach ($orders as $order) { ?>
+			]]></search>
+			<add><![CDATA[
+                         <?php foreach ($orders as $order) { ?>
+                         <? // inicio módulo corped
+                        if ($this->config->get('corped_status')) {
+                           $corped = 'background-color:#'.$order['cor'].';';
+                         }else{ 
+                           $corped = '';
+                         } ?>
+                          <tr>
+                            <td class="right" style="<?php echo $corped; ?>"><?php echo $order['order_id']; ?></td>
+                            <td class="left" style="<?php echo $corped; ?>"><?php echo $order['customer']; ?></td>
+                            <td class="left" style="<?php echo $corped; ?>"><?php echo $order['status']; ?></td>
+                            <td class="left" style="<?php echo $corped; ?>"><?php echo $order['date_added']; ?></td>
+                            <td class="right" style="<?php echo $corped; ?>"><?php echo $order['total']; ?></td>
+                            <td class="right" style="<?php echo $corped; ?>"><?php foreach ($order['action'] as $action) { ?>
+                              [ <a href="<?php echo $action['href']; ?>"><?php echo $action['text']; ?></a> ]
+                              <?php } ?></td>
+                          </tr>
+                        ]]></add>  
+		</operation>
+	</file>
+</modification>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<module>Product Image on Order Email</module>
+	<id>Product Image on Order Confirm Page</id>
+	<version>1.5.5.x</version>
+	<vqmver>2.X</vqmver>
+	<developer>kwason@outlook.com</developer>		
+	<author><![CDATA[<a href="http://xtensions.in" target = "_blank">www.xtensions.in</a><br />]]> <![CDATA[<a href="mailto:kwason@outlook.com">Email-Support</a><br />]]> <![CDATA[<a href="http://xtensions.in/support" target = "_blank">Ticket Support</a>]]></author>	
+	<file name="catalog/model/checkout/order.php">
+		<operation>
+			<search position="before"><![CDATA[$option_data = array();]]></search>
+			<add><![CDATA[
+			$template->data['text_image'] = $language->get('text_image');
+			$this->load->model('account/order');
+				$image = $this->model_account_order->getProductImageEmail($product['product_id']);
+					$this->load->model('tool/image');
+					if ($image && file_exists(DIR_IMAGE . $image)) {
+						$image = $this->model_tool_image->resize($image, 60, 60);
+					} else {
+						$image = $this->model_tool_image->resize('no_image.jpg', 60, 60);
+					}
+			]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA['name'     => $product['name'],]]></search>
+			<add><![CDATA[
+			'name'     => $product['name'],
+			'image'      => $image,
+			]]></add>
+		</operation>
+	</file>
+	<file name="catalog/model/account/order.php">
+		<operation>
+			<search position="before"><![CDATA[public function getOrderProducts($order_id) {]]></search>
+			<add><![CDATA[
+			public function getProductImageEmail($product_id){
+				$query = $this->db->query("select image as image from " . DB_PREFIX . "product where product_id = ".(int)$product_id);
+				return $query->row['image'];
+			}
+			]]></add>
+		</operation>		
+	</file>	
+	
+	<file name="catalog/language/*/mail/order.php">
+		<operation>
+			<search position="before"><![CDATA[?>]]></search>
+			<add><![CDATA[			
+			$_['text_image']           = 'Image';
+			]]></add>
+		</operation>		
+	</file>
+	
+	<file name="catalog/view/theme/*/template/mail/order.tpl">
+		<operation>
+			<search position="before"><![CDATA[<td style="font-size: 12px; border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; background-color: #EFEFEF; font-weight: bold; text-align: left; padding: 7px; color: #222222;"><?php echo $text_product; ?></td>]]></search>
+			<add><![CDATA[
+			<?php if ($products) { ?>
+				<td style="font-size: 12px; border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; background-color: #EFEFEF; font-weight: bold; text-align: left; padding: 7px; color: #222222;"><?php echo $text_image; ?></td>
+			<?php } ?>	
+			]]></add>
+		</operation>
+		<operation>
+			<search position="before"><![CDATA[<td style="font-size: 12px;	border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; text-align: left; padding: 7px;"><?php echo $product['name']; ?>]]></search>
+			<add><![CDATA[
+			<td  class="center" width="1" style =" border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD;  " ><img src="<?php echo $product['image']; ?>" style="padding: 1px; border: 1px solid #DDDDDD;" /></td>
+			]]></add>
+		</operation>
+		<operation>
+			<search position="before"><![CDATA[<td style="font-size: 12px;	border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; text-align: left; padding: 7px;"><?php echo $voucher['description']; ?></td>]]></search>
+			<add><![CDATA[
+			<?php if ($products) { ?>
+				<td></td>
+			<?php } ?>	
+			]]></add>
+		</operation>	
+		<operation>
+			<search position="replace"><![CDATA[<td style="font-size: 12px;	border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; text-align: right; padding: 7px;" colspan="4"><b><?php echo $total['title']; ?>:</b></td>]]></search>
+			<add><![CDATA[
+			<?php if ($products) { ?>
+				<td style="font-size: 12px;	border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; text-align: right; padding: 7px;" colspan="5"><b><?php echo $total['title']; ?>:</b></td>
+			<?php } else { ?>
+				<td style="font-size: 12px;	border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; text-align: right; padding: 7px;" colspan="4"><b><?php echo $total['title']; ?>:</b></td>
+			<?php } ?>	
+			]]></add>
+		</operation>		
+	</file>
+	
+	
+</modification>

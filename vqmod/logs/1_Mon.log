@@ -1,0 +1,80 @@
+---------- Date: 2017-02-06 23:37:46 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=module/vqmod_manager&amp;token=9a7c37db94a27f50500da0aabbd22baf
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/deliverydateswizard.xml
+   id        : Delivery Dates Wizard
+   version   : 1.0
+   vqmver    : 2.4.1
+   author    : Musaffar Patel
+VQModObject::parseMods - Could not resolve path for [catalog/controller/module/quickcheckout.php] (SKIPPED)
+VQModObject::parseMods - Could not resolve path for [catalog/controller/module/quickcheckout.php] (SKIPPED)
+VQModObject::parseMods - Could not resolve path for [catalog/model/quickcheckout/order.php] (SKIPPED)
+VQModObject::parseMods - Could not resolve path for [admin/controller/sale/order_entry.php] (SKIPPED)
+VQModObject::parseMods - Could not resolve path for [admin/model/sale/order_entry.php] (SKIPPED)
+
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/google_remarketing.xml
+   id        : Google Remarketing Standard & Dynamic
+   version   : 6.6.6
+   vqmver    : 2.1.5
+   author    : Opencart Quality Extensions - http://www.opencart.com/index.php?route=extension/extension&filter_username=OPQyalityExtensions
+VQModObject::parseMods - Could not resolve path for [catalog/controller/onecheckout/success.php] (SKIPPED)
+
+----------------------------------------------------------------------
+
+
+---------- Date: 2017-02-06 23:37:59 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=module/vqmod_manager&amp;token=9a7c37db94a27f50500da0aabbd22baf
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/deliverydateswizard.xml
+   id        : Delivery Dates Wizard
+   version   : 1.0
+   vqmver    : 2.4.1
+   author    : Musaffar Patel
+VQModObject::parseMods - Could not resolve path for [catalog/controller/module/quickcheckout.php] (SKIPPED)
+VQModObject::parseMods - Could not resolve path for [catalog/controller/module/quickcheckout.php] (SKIPPED)
+VQModObject::parseMods - Could not resolve path for [catalog/model/quickcheckout/order.php] (SKIPPED)
+VQModObject::parseMods - Could not resolve path for [admin/controller/sale/order_entry.php] (SKIPPED)
+VQModObject::parseMods - Could not resolve path for [admin/model/sale/order_entry.php] (SKIPPED)
+
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/google_remarketing.xml
+   id        : Google Remarketing Standard & Dynamic
+   version   : 6.6.6
+   vqmver    : 2.1.5
+   author    : Opencart Quality Extensions - http://www.opencart.com/index.php?route=extension/extension&filter_username=OPQyalityExtensions
+VQModObject::parseMods - Could not resolve path for [catalog/controller/onecheckout/success.php] (SKIPPED)
+
+----------------------------------------------------------------------
+
+
+---------- Date: 2017-02-06 23:43:24 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=common/home&amp;token=9a7c37db94a27f50500da0aabbd22baf
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/corped.xml
+   id        : Cor do Pedido
+   version   : 1.0.0
+   vqmver    : 2.1.5
+   author    : Jeann
+
+File Name    : admin/model/sale/order.php(0)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): $sql = "SELECT o.order_id, CONCAT(o.firstname, ' ', o.lastname) AS customer, (SELECT os.name FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS status, o.total, o.currency_code, o.currency_value, o.date_added, o.date_modified FROM `" . DB_PREFIX . "order` o";
+
+----------------------------------------------------------------------
+
+
+---------- Date: 2017-02-06 23:43:30 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/pos_tax_calculate.xml
+   id        : POS Calculate tax from total
+   version   : 1.1
+   vqmver    : 2.x
+   author    : Jimmy: flyingmel.java@gmail.com, Jason: hh4cimm@yahoo.com
+
+File Name    : system/library/cart.php(0)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): 'length_class_id' => $product_query->row['length_class_id']
+
+----------------------------------------------------------------------
+
+

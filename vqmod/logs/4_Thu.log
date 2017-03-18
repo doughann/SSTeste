@@ -1,0 +1,120 @@
+---------- Date: 2016-12-08 18:21:15 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=sale/order/invoice&amp;token=1f5ba8fe2d463de9fe1965cb5c8c409c&amp;order_id=5557
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/corped.xml
+   id        : Cor do Pedido
+   version   : 1.0.0
+   vqmver    : 2.1.5
+   author    : Jeann
+
+File Name    : admin/model/sale/order.php(0)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): $sql = "SELECT o.order_id, CONCAT(o.firstname, ' ', o.lastname) AS customer, (SELECT os.name FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS status, o.total, o.currency_code, o.currency_value, o.date_added, o.date_modified FROM `" . DB_PREFIX . "order` o";
+
+----------------------------------------------------------------------
+
+
+---------- Date: 2016-12-08 18:21:36 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=sale/order/invoice&amp;token=1f5ba8fe2d463de9fe1965cb5c8c409c&amp;order_id=5557
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/corped.xml
+   id        : Cor do Pedido
+   version   : 1.0.0
+   vqmver    : 2.1.5
+   author    : Jeann
+
+File Name    : admin/model/sale/order.php(0)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): $sql = "SELECT o.order_id, CONCAT(o.firstname, ' ', o.lastname) AS customer, (SELECT os.name FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS status, o.total, o.currency_code, o.currency_value, o.date_added, o.date_modified FROM `" . DB_PREFIX . "order` o";
+
+----------------------------------------------------------------------
+
+
+---------- Date: 2016-12-08 18:41:13 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=sale/order/invoice&amp;token=1f5ba8fe2d463de9fe1965cb5c8c409c&amp;order_id=5557
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/corped.xml
+   id        : Cor do Pedido
+   version   : 1.0.0
+   vqmver    : 2.1.5
+   author    : Jeann
+
+File Name    : admin/model/sale/order.php(0)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): $sql = "SELECT o.order_id, CONCAT(o.firstname, ' ', o.lastname) AS customer, (SELECT os.name FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS status, o.total, o.currency_code, o.currency_value, o.date_added, o.date_modified FROM `" . DB_PREFIX . "order` o";
+
+----------------------------------------------------------------------
+
+
+---------- Date: 2016-12-08 18:43:52 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=sale/order/info&amp;token=1f5ba8fe2d463de9fe1965cb5c8c409c&amp;order_id=5557
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/deliverydateswizard.xml
+   id        : Delivery Dates Wizard
+   version   : 1.0
+   vqmver    : 2.4.1
+   author    : Musaffar Patel
+
+File Name    : admin/controller/sale/order.php(2)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): public function invoice() {
+
+----------------------------------------------------------------------
+
+
+---------- Date: 2016-12-08 18:44:06 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=sale/order/info&amp;token=1f5ba8fe2d463de9fe1965cb5c8c409c&amp;order_id=5557
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/corped.xml
+   id        : Cor do Pedido
+   version   : 1.0.0
+   vqmver    : 2.1.5
+   author    : Jeann
+
+File Name    : admin/model/sale/order.php(0)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): $sql = "SELECT o.order_id, CONCAT(o.firstname, ' ', o.lastname) AS customer, (SELECT os.name FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS status, o.total, o.currency_code, o.currency_value, o.date_added, o.date_modified FROM `" . DB_PREFIX . "order` o";
+
+----------------------------------------------------------------------
+
+
+---------- Date: 2016-12-08 18:45:32 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=sale/order/invoice&amp;token=1f5ba8fe2d463de9fe1965cb5c8c409c&amp;order_id=5557
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/deliverydateswizard.xml
+   id        : Delivery Dates Wizard
+   version   : 1.0
+   vqmver    : 2.4.1
+   author    : Musaffar Patel
+
+File Name    : admin/controller/sale/order.php(2)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): public function invoice() {
+
+----------------------------------------------------------------------
+
+
+---------- Date: 2016-12-08 20:22:58 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=sale/order/processapedido&amp;token=79128dcbbb652153fd88884658c27186
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/deliverydateswizard.xml
+   id        : Delivery Dates Wizard
+   version   : 1.0
+   vqmver    : 2.4.1
+   author    : Musaffar Patel
+
+File Name    : admin/controller/sale/order.php(2)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): public function invoice() {
+
+----------------------------------------------------------------------
+
+
+---------- Date: 2016-12-08 20:25:54 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=sale/order&amp;token=79128dcbbb652153fd88884658c27186
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/deliverydateswizard.xml
+   id        : Delivery Dates Wizard
+   version   : 1.0
+   vqmver    : 2.4.1
+   author    : Musaffar Patel
+
+File Name    : admin/controller/sale/order.php(2)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): public function invoice() {
+
+----------------------------------------------------------------------
+
+

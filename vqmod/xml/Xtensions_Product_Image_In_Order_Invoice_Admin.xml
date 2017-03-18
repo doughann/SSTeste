@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<module>Product Image on Order Confirm Page</module>
+	<id>Product Image on Order Invoice Page Admin</id>
+	<version>1.5.5.x</version>
+	<vqmver>2.X</vqmver>
+	<developer>kwason@outlook.com</developer>		
+	<author><![CDATA[<a href="http://xtensions.in" target = "_blank">www.xtensions.in</a><br />]]> <![CDATA[<a href="mailto:kwason@outlook.com">Email-Support</a><br />]]> <![CDATA[<a href="http://xtensions.in/support" target = "_blank">Ticket Support</a>]]></author>	
+	<file name="admin/controller/sale/order.php">
+		<operation>
+			<search position="after"><![CDATA[$options = $this->model_sale_order->getOrderOptions($order_id, $product['order_product_id']);]]></search>
+			<add><![CDATA[
+			$this->data['column_image'] = $this->language->get('column_image');
+			$image = $this->model_sale_order->getProductImageInvoice($product['product_id']);
+					$this->load->model('tool/image');
+					if ($image && file_exists(DIR_IMAGE . $image)) {
+						$image = $this->model_tool_image->resize($image, 80, 80);
+					} else {
+						$image = $this->model_tool_image->resize('no_image.jpg', 80, 80);
+					}
+			]]></add>
+		</operation>
+		
+		<operation>
+			<search position="after"><![CDATA['name'     => $product['name'],]]></search>
+			<add><![CDATA[
+			'image'    	 	   => $image,
+			]]></add>
+		</operation>
+				
+	</file>
+	<file name="admin/model/sale/order.php">
+		<operation>
+			<search position="before"><![CDATA[public function editOrder($order_id, $data) {]]></search>
+			<add><![CDATA[
+			public function getProductImageInvoice($product_id){
+				$query = $this->db->query("select image as image from " . DB_PREFIX . "product where product_id = ".(int)$product_id);
+				return $query->row['image'];
+			}
+			]]></add>
+		</operation>		
+	</file>
+	
+	<file name="admin/view/template/sale/order_invoice.tpl">
+		<operation>
+			<search position="before"><![CDATA[<td><b><?php echo $column_product; ?></b></td>]]></search>
+			<add><![CDATA[
+			<?php if ($order['product']) { ?>
+				<td><b><?php echo $column_image; ?></b></td>
+			<?php } ?>	
+			]]></add>
+		</operation>
+		<operation>
+			<search position="before"><![CDATA[<td><?php echo $product['name']; ?>]]></search>
+			<add><![CDATA[
+			<td class="center" width="1" ><img src="<?php echo $product['image']; ?>" title="<?php echo $product['name']; ?>" style="padding: 1px; border: 1px solid #DDDDDD;" /></td>
+			]]></add>
+		</operation>
+		<operation>
+			<search position="before"><![CDATA[<td align="left"><?php echo $voucher['description']; ?></td>]]></search>
+			<add><![CDATA[
+			<?php if ($order['product']) { ?>
+				<td></td>
+			<?php } ?>	
+			]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[<td align="right" colspan="4"><b><?php echo $total['title']; ?>:</b></td>]]></search>
+			<add><![CDATA[
+			<?php if ($order['product']) { ?>
+				<td align="right" colspan="5"><b><?php echo $total['title']; ?>:</b></td>
+			<?php } else { ?>
+				<td align="right" colspan="4"><b><?php echo $total['title']; ?>:</b></td>
+			<?php } ?>	
+			]]></add>
+		</operation>		
+	</file>
+	
+	
+</modification>

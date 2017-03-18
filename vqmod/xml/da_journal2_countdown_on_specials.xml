@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+    <id>Journal2 Countdown On Specials</id>
+    <version>1.5.x</version>
+    <vqmver required="true">2.4.0</vqmver>
+    <author>digital-atelier.com</author>
+
+    <file path="catalog/controller/product/" name="category.php,search.php,manufacturer.php,special.php">
+        <operation error="log">
+            <search position="before"><![CDATA[$this->data['products'][] = array(]]></search>
+            <add><![CDATA[
+                $date_end = false;
+                if ($this->config->get('config_template') === 'journal2' && $special && $this->journal2->settings->get('show_countdown', 'never') !== 'never') {
+                    $this->load->model('journal2/product');
+                    $date_end = $this->model_journal2_product->getSpecialCountdown($result['product_id']);
+                    if ($date_end === '0000-00-00') {
+                        $date_end = false;
+                    }
+                }
+            ]]></add>
+        </operation>
+        <operation error="log">
+            <search position="after"><![CDATA['thumb'       => $image,]]></search>
+            <add><![CDATA[
+                'date_end'       => $date_end,
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/product/" name="product.php">
+        <operation error="log">
+            <search position="after"><![CDATA[if ((float)$product_info['special']) {]]></search>
+            <add><![CDATA[
+                if ($this->config->get('config_template') === 'journal2' && $this->journal2->settings->get('show_countdown_product_page', 'on') == 'on') {
+                    $this->load->model('journal2/product');
+                    $date_end = $this->model_journal2_product->getSpecialCountdown($this->request->get['product_id']);
+                    if ($date_end === '0000-00-00') {
+                        $date_end = false;
+                    }
+                    $this->data['date_end'] = $date_end;
+                }
+            ]]></add>
+        </operation>
+        <operation error="log">
+            <search position="before"><![CDATA[$this->data['products'][] = array(]]></search>
+            <add><![CDATA[
+                $date_end = false;
+                if ($this->config->get('config_template') === 'journal2' && $special && $this->journal2->settings->get('show_countdown', 'never') !== 'never') {
+                    $this->load->model('journal2/product');
+                    $date_end = $this->model_journal2_product->getSpecialCountdown($result['product_id']);
+                    if ($date_end === '0000-00-00') {
+                        $date_end = false;
+                    }
+                }
+            ]]></add>
+        </operation>
+        <operation error="log">
+            <search position="after"><![CDATA['special' 	 => $special,]]></search>
+            <add><![CDATA[
+                'date_end'       => $date_end,
+            ]]></add>
+        </operation>
+    </file>
+</modification>
+

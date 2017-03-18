@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<id>Journal2 OpenCart Import / Export Fix</id>
+	<version>1.5.x</version>
+	<vqmver required="true">2.4.0</vqmver>
+	<author>digital-atelier.com</author>
+	
+	<file name="admin/model/tool/backup.php">
+		<operation error="log">
+			<search position="before"><![CDATA[$values .= '\'' . $value . '\', ';]]></search>
+			<add><![CDATA[
+                /* json fix */
+                if (strpos($table, DB_PREFIX . 'journal2_') === 0) {
+                    $value = str_replace('\n', '\\\n', $value);
+                    $value = str_replace('\t', '\\\t', $value);
+                }
+            ]]></add>
+		</operation>
+
+        <operation error="log">
+            <search position="after"><![CDATA[$output .= 'TRUNCATE TABLE `' . $table . '`;' . "\n\n";]]></search>
+            <add><![CDATA[
+                /* journal skins fix */
+                if ($table === DB_PREFIX . 'journal2_skins') {
+                    $output .= "ALTER TABLE `" . $table . "` AUTO_INCREMENT = 100;" . "\n\n";
+                }
+            ]]></add>
+        </operation>
+
+        <operation error="log">
+            <search position="after"><![CDATA[$sql = trim($sql);]]></search>
+            <add><![CDATA[
+            if (strpos($sql, '-- EXPORT FOR') === 0) {
+                $version = (int)str_replace('-- EXPORT FOR: ', '', $sql);
+                if (Front::$IS_OC2 && $version !== 2) {
+                    die('Version mismatch: You have OpenCart 2.x and the imported file is for OpenCart 1.5.x');
+                }
+                if (!Front::$IS_OC2 && $version !== 1) {
+                    die('Version mismatch: You have OpenCart 1.5.x and the imported file is for OpenCart 2.x');
+                }
+            }
+
+            $sql = str_replace('`oc_', '`' . DB_PREFIX, $sql);
+            ]]></add>
+        </operation>
+	</file>
+
+    <file name="admin/controller/tool/backup.php">
+        <operation error="log">
+            <search position="replace"><![CDATA[$this->error['warning'] = $this->language->get('error_empty');]]></search>
+            <add><![CDATA[
+            $err_code = isset($this->request->files['import']['error']) ? $this->request->files['import']['error'] : null;
+            if ($err_code !== null) {
+                $this->error['warning'] = $this->language->get('error_upload_' . $this->request->files['import']['error']);
+                if ($err_code == '1' || $err_code == '2') {
+                    $this->error['warning'] .= '<br />You can find more information <a href="http://stackoverflow.com/a/2184541" target="_blank">here</a> or contact your hosting provider.';
+                }
+            } else {
+                $this->error['warning'] = $this->language->get('error_empty');
+            }
+            ]]></add>
+        </operation>
+
+        <operation error="log">
+            <search position="after"><![CDATA[public function index() {]]></search>
+            <add><![CDATA[
+                $this->data['max_upload_limit']  = '<p>php.ini path: <b>' . php_ini_loaded_file() . '</b></p>';
+                $this->data['max_upload_limit'] .= '<p>upload_max_filesize: <b>' . ini_get('upload_max_filesize') .  '</b></p>';
+                $this->data['max_upload_limit'] .= '<p>post_max_size: <b>' . ini_get('post_max_size') .  '</b></p>';
+                $this->data['max_upload_limit'] .= '<p><a href="http://stackoverflow.com/a/2184541" target="_blank">How to increase them</a></p>';
+            ]]></add>
+        </operation>
+	</file>
+
+    <file name="admin/view/template/tool/backup.tpl">
+        <operation error="log">
+            <search position="replace"><![CDATA[<td><input type="file" name="import" /></td>]]></search>
+            <add><![CDATA[<td><input type="file" name="import" /><?php echo $max_upload_limit; ?></td>]]></add>
+        </operation>
+    </file>
+</modification>
+

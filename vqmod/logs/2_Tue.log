@@ -1,0 +1,25 @@
+---------- Date: 2017-03-07 03:56:57 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=sale/order&amp;token=343f60d0bb9eb31772c0bca8f409deee
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/deliverydateswizard.xml
+   id        : Delivery Dates Wizard
+   version   : 1.0
+   vqmver    : 2.4.1
+   author    : Musaffar Patel
+
+File Name    : admin/controller/sale/order.php(2)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): public function invoice() {
+
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/corped.xml
+   id        : Cor do Pedido
+   version   : 1.0.0
+   vqmver    : 2.1.5
+   author    : Jeann
+
+File Name    : admin/view/template/sale/order_list.tpl(0)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): <?php foreach ($orders as $order) { ?>
+
+----------------------------------------------------------------------
+
+

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+
+	<id>Datapicker Portugues-br</id>
+	<version>1.0.0</version>
+	<vqmver>2.4.0</vqmver>
+	<author><![CDATA[<a onClick="window.open('http://www.opencart.com/index.php?route=extension/extension&filter_username=frymi');" title="View all OpenCart extension by frymi">frymi</a>]]></author>
+
+  <!-- ADMIN -->
+
+	<file name="admin/view/template/common/header.tpl">
+    <operation>
+			<search position="before"><![CDATA[<?php foreach ($scripts as $script) { ?>]]></search>
+                           <add><![CDATA[<script type="text/javascript" src="view/javascript/jquery/ui/i18n/jquery.ui.datepicker-pt-BR.js"></script>]]></add>
+    </operation>
+	</file>
+
+  <!-- CATALOG -->
+
+	<file name="catalog/view/theme/*/template/common/header.tpl">
+    <operation>
+			<search position="before"><![CDATA[<?php foreach ($scripts as $script) { ?>]]></search>
+                           <add><![CDATA[<?php $this->journal2->minifier->addScript("catalog/view/javascript/jquery/ui/i18n/jquery.ui.datepicker-pt-BR.js"); ?>]]></add>
+    </operation>
+	</file>
+	
+</modification>

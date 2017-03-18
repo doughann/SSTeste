@@ -1,0 +1,20 @@
+/* CSS Document */
+
+#listShippingMethods a {
+	display:inline-block !important;
+}
+
+#settings {
+	padding:0px 10px;
+}
+
+#ddw_dates_blocked tfoot tr.title td {	
+	background-color:#f1f1f1;
+	font-weight:bold;
+	padding:20px 7px;
+	border-top:4px #c1c1c1 solid;
+}
+
+#ddw_dates_blocked tfoot tr#frmDate td {	
+	padding:7px;
+}

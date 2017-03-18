@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<id>Journal2 Product Second Image</id>
+	<version>1.5.x</version>
+	<vqmver required="true">2.4.0</vqmver>
+	<author>digital-atelier.com</author>
+	
+	<file path="catalog/controller/product/" name="category.php">
+		<operation error="skip">
+			<search position="before"><![CDATA[$this->data['products'][] = array(]]></search>
+			<add><![CDATA[
+                $additional_images = $this->model_catalog_product->getProductImages($result['product_id']);
+
+                $image2 = false;
+
+                if (count($additional_images) > 0) {
+                    $image2 = $this->model_tool_image->resize($additional_images[0]['image'], $this->config->get('config_image_product_width'), $this->config->get('config_image_product_height'));
+                }
+            ]]></add>
+		</operation>
+        <operation error="skip">
+            <search position="after"><![CDATA['thumb'       => $image,]]></search>
+            <add><![CDATA[
+                'thumb2'       => $image2,
+            ]]></add>
+        </operation>
+	</file>
+
+    <file path="catalog/controller/product/" name="special.php">
+        <operation error="skip">
+            <search position="before"><![CDATA[$this->data['products'][] = array(]]></search>
+            <add><![CDATA[
+                $additional_images = $this->model_catalog_product->getProductImages($result['product_id']);
+
+                $image2 = false;
+
+                if (count($additional_images) > 0) {
+                    $image2 = $this->model_tool_image->resize($additional_images[0]['image'], $this->config->get('config_image_product_width'), $this->config->get('config_image_product_height'));
+                }
+            ]]></add>
+        </operation>
+        <operation error="skip">
+            <search position="after"><![CDATA['thumb'       => $image,]]></search>
+            <add><![CDATA[
+                'thumb2'       => $image2,
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/product/" name="manufacturer.php">
+        <operation error="skip">
+            <search position="before"><![CDATA[$this->data['products'][] = array(]]></search>
+            <add><![CDATA[
+                $additional_images = $this->model_catalog_product->getProductImages($result['product_id']);
+
+                $image2 = false;
+
+                if (count($additional_images) > 0) {
+                    $image2 = $this->model_tool_image->resize($additional_images[0]['image'], $this->config->get('config_image_product_width'), $this->config->get('config_image_product_height'));
+                }
+            ]]></add>
+        </operation>
+        <operation error="skip">
+            <search position="after"><![CDATA['thumb'       => $image,]]></search>
+            <add><![CDATA[
+                'thumb2'       => $image2,
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/product/" name="search.php">
+        <operation error="skip">
+            <search position="before"><![CDATA[$this->data['products'][] = array(]]></search>
+            <add><![CDATA[
+                $additional_images = $this->model_catalog_product->getProductImages($result['product_id']);
+
+                $image2 = false;
+
+                if (count($additional_images) > 0) {
+                    $image2 = $this->model_tool_image->resize($additional_images[0]['image'], $this->config->get('config_image_product_width'), $this->config->get('config_image_product_height'));
+                }
+            ]]></add>
+        </operation>
+        <operation error="skip">
+            <search position="after"><![CDATA['thumb'       => $image,]]></search>
+            <add><![CDATA[
+                'thumb2'       => $image2,
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/product/" name="product.php">
+        <operation error="skip">
+            <search position="before"><![CDATA[$this->data['products'][] = array(]]></search>
+            <add><![CDATA[
+                $additional_images = $this->model_catalog_product->getProductImages($result['product_id']);
+
+                $image2 = false;
+
+                if (count($additional_images) > 0) {
+                    $image2 = $this->model_tool_image->resize($additional_images[0]['image'], $this->config->get('config_image_product_width'), $this->config->get('config_image_product_height'));
+                }
+            ]]></add>
+        </operation>
+        <operation error="skip">
+            <search position="after"><![CDATA['thumb'   	 => $image,]]></search>
+            <add><![CDATA[
+                'thumb2'       => $image2,
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/module/" name="bestseller.php">
+        <operation error="skip">
+            <search position="before"><![CDATA[$this->data['products'][] = array(]]></search>
+            <add><![CDATA[
+                $additional_images = $this->model_catalog_product->getProductImages($result['product_id']);
+
+                $image2 = false;
+
+                if (count($additional_images) > 0) {
+                    $image2 = $this->model_tool_image->resize($additional_images[0]['image'], $this->config->get('config_image_product_width'), $this->config->get('config_image_product_height'));
+                }
+            ]]></add>
+        </operation>
+        <operation error="skip">
+            <search position="after"><![CDATA['thumb'   	 => $image,]]></search>
+            <add><![CDATA[
+                'thumb2'       => $image2,
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/module/" name="featured.php">
+        <operation error="skip">
+            <search position="before"><![CDATA[$this->data['products'][] = array(]]></search>
+            <add><![CDATA[
+                $additional_images = $this->model_catalog_product->getProductImages($product_info['product_id']);
+
+                $image2 = false;
+
+                if (count($additional_images) > 0) {
+                    $image2 = $this->model_tool_image->resize($additional_images[0]['image'], $this->config->get('config_image_product_width'), $this->config->get('config_image_product_height'));
+                }
+            ]]></add>
+        </operation>
+        <operation error="skip">
+            <search position="after"><![CDATA['thumb'   	 => $image,]]></search>
+            <add><![CDATA[
+                'thumb2'       => $image2,
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/module/" name="latest.php">
+        <operation error="skip">
+            <search position="before"><![CDATA[$this->data['products'][] = array(]]></search>
+            <add><![CDATA[
+                $additional_images = $this->model_catalog_product->getProductImages($result['product_id']);
+
+                $image2 = false;
+
+                if (count($additional_images) > 0) {
+                    $image2 = $this->model_tool_image->resize($additional_images[0]['image'], $this->config->get('config_image_product_width'), $this->config->get('config_image_product_height'));
+                }
+            ]]></add>
+        </operation>
+        <operation error="skip">
+            <search position="after"><![CDATA['thumb'   	 => $image,]]></search>
+            <add><![CDATA[
+                'thumb2'       => $image2,
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/module/" name="special.php">
+        <operation error="skip">
+            <search position="before"><![CDATA[$this->data['products'][] = array(]]></search>
+            <add><![CDATA[
+                $additional_images = $this->model_catalog_product->getProductImages($result['product_id']);
+
+                $image2 = false;
+
+                if (count($additional_images) > 0) {
+                    $image2 = $this->model_tool_image->resize($additional_images[0]['image'], $this->config->get('config_image_product_width'), $this->config->get('config_image_product_height'));
+                }
+            ]]></add>
+        </operation>
+        <operation error="skip">
+            <search position="after"><![CDATA['thumb'   	 => $image,]]></search>
+            <add><![CDATA[
+                'thumb2'       => $image2,
+            ]]></add>
+        </operation>
+    </file>
+
+</modification>
+

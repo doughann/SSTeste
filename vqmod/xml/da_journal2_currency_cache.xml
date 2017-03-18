@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<id>Journal2 Currency Cache</id>
+	<version>1.5.x</version>
+	<vqmver required="true">2.4.0</vqmver>
+	<author>digital-atelier.com</author>
+
+    <file path="admin/model/localisation/currency.php">
+        <operation>
+            <search position="after"><![CDATA[$this->db->query("UPDATE " . DB_PREFIX . "currency SET value = '1.00000', date_modified = '" .  $this->db->escape(date('Y-m-d H:i:s')) . "' WHERE code = '" . $this->db->escape($this->config->get('config_currency')) . "'");]]></search>
+            <add><![CDATA[
+                if (defined('JOURNAL_FLUSH_CURRENCY_CACHE')) {
+                    require_once(DIR_SYSTEM . 'journal2/classes/journal2_cache.php');
+                    Journal2Cache::deleteCache();
+                }
+            ]]></add>
+        </operation>
+    </file>
+
+</modification>
+

@@ -1,0 +1,179 @@
+<modification>
+    <id>Ordem Produtos</id>
+    <version>1.0</version>
+    <vqmver>2.5.1</vqmver>
+    <author>Rogerio Alan Dobler</author>
+
+    <file name="admin/controller/setting/setting.php">
+        <operation>
+            <search position="before"><![CDATA[if (isset($this->request->post['config_stock_display'])) {]]></search>
+            <add><![CDATA[
+		if (isset($this->request->post['config_add_sort_by_stock'])) {
+			$this->data['config_add_sort_by_stock'] = $this->request->post['config_add_sort_by_stock'];
+		} else {
+			$this->data['config_add_sort_by_stock'] = $this->config->get('config_add_sort_by_stock');			
+		}
+		if (isset($this->request->post['config_def_sort_by_stock'])) {
+			$this->data['config_def_sort_by_stock'] = $this->request->post['config_def_sort_by_stock'];
+		} else {
+			$this->data['config_def_sort_by_stock'] = $this->config->get('config_def_sort_by_stock');			
+		}
+            ]]></add>
+        </operation>   
+    </file>
+
+    <file name="admin/view/template/setting/setting.tpl">
+        <operation>
+            <search position="before" offset="1"><![CDATA[<td><?php echo $entry_stock_display; ?></td>]]></search>
+            <add><![CDATA[
+            <tr>
+              <td>Adicionar classificação por estoque na categoria, fabricante e página de pesquisa</td>
+              <td><?php if ($config_add_sort_by_stock) { ?>
+                <input type="radio" name="config_add_sort_by_stock" value="1" checked="checked" />
+                <?php echo $text_yes; ?>
+                <input type="radio" name="config_add_sort_by_stock" value="0" />
+                <?php echo $text_no; ?>
+                <?php } else { ?>
+                <input type="radio" name="config_add_sort_by_stock" value="1" />
+                <?php echo $text_yes; ?>
+                <input type="radio" name="config_add_sort_by_stock" value="0" checked="checked" />
+                <?php echo $text_no; ?>
+                <?php } ?></td>
+            </tr>
+            <tr>
+              <td>Classificar por: Estoque (Alto > Baixo) classificação padrão na categoria, fabricante e página de pesquisa</td>
+              <td><?php if ($config_def_sort_by_stock) { ?>
+                <input type="radio" name="config_def_sort_by_stock" value="1" checked="checked" />
+                <?php echo $text_yes; ?>
+                <input type="radio" name="config_def_sort_by_stock" value="0" />
+                <?php echo $text_no; ?>
+                <?php } else { ?>
+                <input type="radio" name="config_def_sort_by_stock" value="1" />
+                <?php echo $text_yes; ?>
+                <input type="radio" name="config_def_sort_by_stock" value="0" checked="checked" />
+                <?php echo $text_no; ?>
+                <?php } ?></td>
+            </tr>
+            ]]></add>
+        </operation>   
+    </file>
+	
+	<file name="catalog/language/portuguese-br/portuguese-br.php">
+        <operation>
+            <search position="after"><![CDATA[<?php]]></search>
+            <add><![CDATA[
+$_['text_sort_by_stock_desc'] = 'Estoque (Alto > Baixo)';
+$_['text_sort_by_stock_asc'] = 'Estoque (Baixo > Alto)';
+            ]]></add>
+        </operation>   
+    </file>
+
+    <file name="catalog/controller/product/category.php">
+        <operation>
+            <search position="after"><![CDATA[$sort = 'p.sort_order';]]></search>
+            <add><![CDATA[
+			if ($this->config->get('config_add_sort_by_stock') AND $this->config->get('config_def_sort_by_stock')) {
+			$sort = 'p.quantity';
+			}
+            ]]></add>
+        </operation>
+        <operation>
+            <search position="after"><![CDATA[$order = 'ASC';]]></search>
+            <add><![CDATA[
+			if ($this->config->get('config_add_sort_by_stock') AND $this->config->get('config_def_sort_by_stock')) {
+			$order = 'DESC';
+			}
+            ]]></add>
+        </operation>
+        <operation>
+            <search position="before" offset="1"><![CDATA['text'  => $this->language->get('text_name_asc'),]]></search>
+            <add><![CDATA[
+			if ($this->config->get('config_add_sort_by_stock')) {
+			$this->data['sorts'][] = array(
+				'text'  => $this->language->get('text_sort_by_stock_desc'),
+				'value' => 'p.quantity-DESC',
+				'href'  => $this->url->link('product/category', 'path=' . $this->request->get['path'] . '&sort=p.quantity&order=DESC' . $url)
+			);
+			$this->data['sorts'][] = array(
+				'text'  => $this->language->get('text_sort_by_stock_asc'),
+				'value' => 'p.quantity-ASC',
+				'href'  => $this->url->link('product/category', 'path=' . $this->request->get['path'] . '&sort=p.quantity&order=ASC' . $url)
+			);
+			}
+            ]]></add>
+        </operation>   
+    </file>
+
+    <file name="catalog/controller/product/manufacturer.php">
+        <operation>
+            <search position="after"><![CDATA[$sort = 'p.sort_order';]]></search>
+            <add><![CDATA[
+			if ($this->config->get('config_add_sort_by_stock') AND $this->config->get('config_def_sort_by_stock')) {
+			$sort = 'p.quantity';
+			}
+            ]]></add>
+        </operation>
+        <operation>
+            <search position="after"><![CDATA[$order = 'ASC';]]></search>
+            <add><![CDATA[
+			if ($this->config->get('config_add_sort_by_stock') AND $this->config->get('config_def_sort_by_stock')) {
+			$order = 'DESC';
+			}
+            ]]></add>
+        </operation>
+        <operation>
+            <search position="before" offset="1"><![CDATA['text'  => $this->language->get('text_name_asc'),]]></search>
+            <add><![CDATA[
+			if ($this->config->get('config_add_sort_by_stock')) {
+			$this->data['sorts'][] = array(
+				'text'  => $this->language->get('text_sort_by_stock_desc'),
+				'value' => 'p.quantity-DESC',
+				'href'  => $this->url->link('product/manufacturer/info', 'manufacturer_id=' . $this->request->get['manufacturer_id'] . '&sort=p.quantity&order=DESC' . $url)
+			);
+			$this->data['sorts'][] = array(
+				'text'  => $this->language->get('text_sort_by_stock_asc'),
+				'value' => 'p.quantity-ASC',
+				'href'  => $this->url->link('product/manufacturer/info', 'manufacturer_id=' . $this->request->get['manufacturer_id'] . '&sort=p.quantity&order=ASC' . $url)
+			);
+			}
+            ]]></add>
+        </operation>   
+    </file>
+
+    <file name="catalog/controller/product/search.php">
+        <operation>
+            <search position="after"><![CDATA[$sort = 'p.sort_order';]]></search>
+            <add><![CDATA[
+			if ($this->config->get('config_add_sort_by_stock') AND $this->config->get('config_def_sort_by_stock')) {
+			$sort = 'p.quantity';
+			}
+            ]]></add>
+        </operation>
+        <operation>
+            <search position="after"><![CDATA[$order = 'ASC';]]></search>
+            <add><![CDATA[
+			if ($this->config->get('config_add_sort_by_stock') AND $this->config->get('config_def_sort_by_stock')) {
+			$order = 'DESC';
+			}
+            ]]></add>
+        </operation>
+        <operation>
+            <search position="before" offset="1"><![CDATA['text'  => $this->language->get('text_name_asc'),]]></search>
+            <add><![CDATA[
+			if ($this->config->get('config_add_sort_by_stock')) {
+			$this->data['sorts'][] = array(
+				'text'  => $this->language->get('text_sort_by_stock_desc'),
+				'value' => 'p.quantity-DESC',
+				'href'  => $this->url->link('product/search', 'sort=p.quantity&order=DESC' . $url)
+			);
+			$this->data['sorts'][] = array(
+				'text'  => $this->language->get('text_sort_by_stock_asc'),
+				'value' => 'p.quantity-ASC',
+				'href'  => $this->url->link('product/search', 'sort=p.quantity&order=ASC' . $url)
+			);
+			}
+            ]]></add>
+        </operation>   
+    </file>
+
+</modification>

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+    <id>Blog Manager</id>
+    <version>1.3.4</version>
+    <vqmver>2.1.0</vqmver>
+    <author>EchoThemes.com</author>
+    <file error="skip" path="catalog/view/theme/default/template/blog/" name="article.tpl,category.tpl">
+        <operation>
+            <search trim="true" position="replace" offset="4"><![CDATA[<div class="breadcrumb">]]></search>
+            <add><![CDATA[ ]]></add>
+        </operation>
+        <operation>
+            <search trim="true" position="replace"><![CDATA[<?php echo $header; ?><?php echo $column_left; ?><?php echo $column_right; ?>]]></search>
+            <add><![CDATA[
+                <?php echo $header; ?>
+                <div class="breadcrumb">
+                <?php foreach ($breadcrumbs as $breadcrumb) { ?>
+                <?php echo $breadcrumb['separator']; ?><a href="<?php echo $breadcrumb['href']; ?>"><?php echo $breadcrumb['text']; ?></a>
+                <?php } ?>
+                </div>
+                <?php echo $column_left; ?><?php echo $column_right; ?>
+            ]]></add>
+        </operation>
+    </file>
+
+    <file error="skip" path="catalog/view/theme/default/template/blog/" name="category.tpl">
+        <operation>
+            <search trim="true" position="replace"><![CDATA[<h1><?php echo $heading_title; ?></h1><span class="livemarks"><a href="<?php echo $feedLink; ?>/category&category_id=<?php echo $this->request->get['category_id']; ?>" target="_blank" title="<?php echo $heading_title; ?> Feed"></a></span>]]></search>
+            <add><![CDATA[<h1 class="heading-title"><?php echo $heading_title; ?></h1><span class="livemarks"><a href="<?php echo $feedLink; ?>/category&category_id=<?php echo $this->request->get['category_id']; ?>" target="_blank" title="<?php echo $heading_title; ?> Feed"></a></span>]]></add>
+        </operation>
+        <operation>
+            <search trim="true" position="replace"><![CDATA[<h1><?php echo $heading_title; ?></h1><span class="livemarks"><a href="<?php echo $feedLink; ?>" target="_blank" title="<?php echo $heading_title; ?> Feed"></a></span>]]></search>
+            <add><![CDATA[<h1 class="heading-title"><?php echo $heading_title; ?></h1><span class="livemarks"><a href="<?php echo $feedLink; ?>" target="_blank" title="<?php echo $heading_title; ?> Feed"></a></span>]]></add>
+        </operation>
+    </file>
+
+    <file error="skip" path="catalog/view/theme/default/template/module/" name="blogarchive.tpl,blogarticle.tpl,blogcategory.tpl,blogcomment.tpl,blogpopular.tpl">
+        <operation>
+            <search trim="true" position="replace"><![CDATA[<div class="box blogModule <?php echo $classSuffix; ?>">]]></search>
+            <add><![CDATA[<div class="box <?php echo implode(' ', array_diff(explode(' ', $classSuffix), array('blogModule', 'boxPlain'))); ?>">]]></add>
+        </operation>
+    </file>
+
+    <file error="skip" path="catalog/view/theme/default/template/module/" name="blogtags.tpl">
+        <operation>
+            <search trim="true" position="replace"><![CDATA[<div class="box blogModule blogTags <?php echo $classSuffix; ?>">]]></search>
+            <add><![CDATA[<div class="box blogTags <?php echo implode(' ', array_diff(explode(' ', $classSuffix), array('blogModule', 'boxPlain'))); ?>">]]></add>
+        </operation>
+    </file>
+
+    <file error="skip" path="catalog/controller/blog/" name="article.php">
+        <operation>
+            <search position="before"><![CDATA[$this->data['prodRelateds'][] = array(]]></search>
+            <add><![CDATA[
+                $additional_images = $this->model_catalog_product->getProductImages($result['product_id']);
+
+                $image2 = false;
+
+                if (count($additional_images) > 0) {
+                    $image2 = $this->model_tool_image->resize($additional_images[0]['image'], $this->config->get('config_image_product_width'), $this->config->get('config_image_product_height'));
+                }
+            ]]></add>
+        </operation>
+        <operation>
+            <search position="after"><![CDATA['thumb'			=> $image,]]></search>
+            <add><![CDATA[
+                'thumb2'			=> $image2,
+            ]]></add>
+        </operation>
+    </file>
+
+    <file error="skip" path="catalog/controller/blog/" name="article.php">
+        <operation>
+            <search position="before"><![CDATA[foreach ($prodRelateds as $result) {]]></search>
+            <add><![CDATA[
+                $this->load->model('journal2/product');
+            ]]></add>
+        </operation>
+        <operation>
+            <search position="after"><![CDATA['thumb'			=> $image,]]></search>
+            <add><![CDATA[
+                'labels'        => $this->model_journal2_product->getLabels($result['product_id']),
+            ]]></add>
+        </operation>
+    </file>
+
+    <file error="skip" path="catalog/view/theme/default/template/blog/" name="article.tpl">
+        <operation>
+            <search trim="true" position="replace" offset="27"><![CDATA[<div id="productRelated">]]></search>
+            <add><![CDATA[
+                <div id="productRelated">
+                    <h2 class="secondary-title"><?php echo $text_related_product; ?></h2>
+                    <div class="box-content">
+                        <div class="box-product">
+                        <?php foreach ($prodRelateds as $prodRelated) { ?>
+                        <?php if ($prodRelated['status']==1) { ?>
+                            <div class="product-grid-item <?php echo $this->journal2->settings->get('product_grid_classes'); ?> display-<?php echo $this->journal2->settings->get('product_grid_wishlist_icon_display');?> <?php echo $this->journal2->settings->get('product_grid_button_block_button');?>">
+                              <div class="product-wrapper">
+                                  <?php if ($prodRelated['thumb']) { ?>
+                                  <div class="image">
+                                      <a href="<?php echo $prodRelated['href']; ?>" <?php if(isset($prodRelated['thumb2']) && $prodRelated['thumb2']): ?> class="has-second-image" style="background: url('<?php echo $prodRelated['thumb2']; ?>') no-repeat;" <?php endif; ?>>
+                                      <img class="first-image"  src="<?php echo $prodRelated['thumb']; ?>" title="<?php echo $prodRelated['name']; ?>" alt="<?php echo $prodRelated['name']; ?>" />
+                                      </a>
+                                      <?php if (isset($prodRelated['labels']) && is_array($prodRelated['labels'])): ?>
+                                      <?php foreach ($prodRelated['labels'] as $label => $name): ?>
+                                      <?php if ($label === 'outofstock'): ?>
+                                      <img class="outofstock" <?php echo Journal2Utils::getRibbonSize($this->journal2->settings->get('out_of_stock_ribbon_size')); ?> style="position: absolute; top: 0; left: 0" src="<?php echo Journal2Utils::generateRibbon($name, $this->journal2->settings->get('out_of_stock_ribbon_size'), $this->journal2->settings->get('out_of_stock_font_color'), $this->journal2->settings->get('out_of_stock_bg')); ?>" alt="" />
+                                      <?php else: ?>
+                                      <span class="label-<?php echo $label; ?>"><b><?php echo $name; ?></b></span>
+                                      <?php endif; ?>
+                                      <?php endforeach; ?>
+                                      <?php endif; ?>
+                                  </div>
+                                  <?php } ?>
+                                  <div class="product-details">
+                                      <div class="name"><a href="<?php echo $prodRelated['href']; ?>"><?php echo $prodRelated['name']; ?></a></div>
+                                      <?php if ($prodRelated['price']) { ?>
+                                      <div class="price">
+                                          <?php if (!$prodRelated['special']) { ?>
+                                          <?php echo $prodRelated['price']; ?>
+                                          <?php } else { ?>
+                                          <span class="price-old"><?php echo $prodRelated['price']; ?></span> <span class="price-new"><?php echo $prodRelated['special']; ?></span>
+                                          <?php } ?>
+                                      </div>
+                                      <?php } ?>
+                                      <?php if ($prodRelated['rating']) { ?>
+                                      <div class="rating"><img width="83" height="15" src="catalog/view/theme/default/image/stars-<?php echo $prodRelated['rating']; ?>.png" alt="<?php echo $prodRelated['reviews']; ?>" /></div>
+                                      <?php } ?>
+                                      <hr>
+                                      <?php if (Journal2Utils::isEnquiryProduct($this, $prodRelated['product_id'])): ?>
+                                      <div class="cart enquiry-button">
+                                        <a href="<?php echo $this->journal2->settings->get('enquiry_popup_code'); ?>" data-clk="addToCart('<?php echo $prodRelated['product_id']; ?>');" class="button hint--top" data-hint="<?php echo $this->journal2->settings->get('enquiry_button_text'); ?>"><?php echo $this->journal2->settings->get('enquiry_button_icon') . '<span class="button-cart-text">' . $this->journal2->settings->get('enquiry_button_text') . '</span>'; ?></a>
+                                      </div>
+                                      <?php else: ?>
+                                      <div class="cart <?php echo isset($prodRelated['labels']) && is_array($prodRelated['labels']) && isset($prodRelated['labels']['outofstock']) ? 'outofstock' : ''; ?>">
+                                          <a onclick="addToCart('<?php echo $prodRelated['product_id']; ?>');" class="button hint--top" data-hint="<?php echo $button_cart; ?>"><i class="button-left-icon"></i><span class="button-cart-text"><?php echo $button_cart; ?></span><i class="button-right-icon"></i></a>
+                                      </div>
+                                      <?php endif; ?>
+                                  </div>
+                              </div>
+                            </div>
+                        <?php } ?>
+                        <?php } ?>
+                    </div>
+                    </div>
+               </div>
+            ]]></add>
+        </operation>
+    </file>
+
+</modification>

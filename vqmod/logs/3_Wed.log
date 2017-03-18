@@ -1,0 +1,205 @@
+---------- Date: 2016-12-07 04:24:37 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=sale/order/info&amp;token=4dc9e607f7678b5b2045c14b8b820e6a&amp;order_id=5557
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/deliverydateswizard.xml
+   id        : Delivery Dates Wizard
+   version   : 1.0
+   vqmver    : 2.4.1
+   author    : Musaffar Patel
+
+File Name    : admin/controller/sale/order.php(2)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): public function invoice() {
+
+----------------------------------------------------------------------
+
+
+---------- Date: 2016-12-07 06:08:03 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=sale/order/invoice&amp;token=64114404f211de06372ec23b6a92ccd4&amp;order_id=5555
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/deliverydateswizard.xml
+   id        : Delivery Dates Wizard
+   version   : 1.0
+   vqmver    : 2.4.1
+   author    : Musaffar Patel
+
+File Name    : admin/controller/sale/order.php(2)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): public function invoice() {
+
+----------------------------------------------------------------------
+
+
+---------- Date: 2016-12-07 06:08:46 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=sale/order/invoice&amp;token=64114404f211de06372ec23b6a92ccd4&amp;order_id=5555
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/deliverydateswizard.xml
+   id        : Delivery Dates Wizard
+   version   : 1.0
+   vqmver    : 2.4.1
+   author    : Musaffar Patel
+
+File Name    : admin/controller/sale/order.php(2)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): public function invoice() {
+
+----------------------------------------------------------------------
+
+
+---------- Date: 2016-12-07 07:09:40 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=sale/order/invoice&amp;token=64114404f211de06372ec23b6a92ccd4&amp;order_id=5555
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/deliverydateswizard.xml
+   id        : Delivery Dates Wizard
+   version   : 1.0
+   vqmver    : 2.4.1
+   author    : Musaffar Patel
+
+File Name    : admin/controller/sale/order.php(2)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): public function invoice() {
+
+----------------------------------------------------------------------
+
+
+---------- Date: 2016-12-07 07:13:12 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=sale/order/invoice&amp;token=64114404f211de06372ec23b6a92ccd4&amp;order_id=5555
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/corped.xml
+   id        : Cor do Pedido
+   version   : 1.0.0
+   vqmver    : 2.1.5
+   author    : Jeann
+
+File Name    : admin/model/sale/order.php(0)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): $sql = "SELECT o.order_id, CONCAT(o.firstname, ' ', o.lastname) AS customer, (SELECT os.name FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS status, o.total, o.currency_code, o.currency_value, o.date_added, o.date_modified FROM `" . DB_PREFIX . "order` o";
+
+----------------------------------------------------------------------
+
+
+---------- Date: 2016-12-07 07:14:43 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=sale/order&amp;token=64114404f211de06372ec23b6a92ccd4
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/deliverydateswizard.xml
+   id        : Delivery Dates Wizard
+   version   : 1.0
+   vqmver    : 2.4.1
+   author    : Musaffar Patel
+
+File Name    : admin/controller/sale/order.php(2)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): public function invoice() {
+
+----------------------------------------------------------------------
+
+
+---------- Date: 2016-12-07 07:18:35 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=sale/order/invoice&amp;token=64114404f211de06372ec23b6a92ccd4&amp;order_id=5557
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/corped.xml
+   id        : Cor do Pedido
+   version   : 1.0.0
+   vqmver    : 2.1.5
+   author    : Jeann
+
+File Name    : admin/model/sale/order.php(0)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): $sql = "SELECT o.order_id, CONCAT(o.firstname, ' ', o.lastname) AS customer, (SELECT os.name FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS status, o.total, o.currency_code, o.currency_value, o.date_added, o.date_modified FROM `" . DB_PREFIX . "order` o";
+
+----------------------------------------------------------------------
+
+
+---------- Date: 2016-12-07 07:21:17 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=sale/order/invoice&amp;token=64114404f211de06372ec23b6a92ccd4&amp;order_id=5557
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/corped.xml
+   id        : Cor do Pedido
+   version   : 1.0.0
+   vqmver    : 2.1.5
+   author    : Jeann
+
+File Name    : admin/model/sale/order.php(0)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): $sql = "SELECT o.order_id, CONCAT(o.firstname, ' ', o.lastname) AS customer, (SELECT os.name FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS status, o.total, o.currency_code, o.currency_value, o.date_added, o.date_modified FROM `" . DB_PREFIX . "order` o";
+
+----------------------------------------------------------------------
+
+
+---------- Date: 2016-12-07 07:29:07 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=sale/order&amp;token=64114404f211de06372ec23b6a92ccd4
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/deliverydateswizard.xml
+   id        : Delivery Dates Wizard
+   version   : 1.0
+   vqmver    : 2.4.1
+   author    : Musaffar Patel
+
+File Name    : admin/controller/sale/order.php(2)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): public function invoice() {
+
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/corped.xml
+   id        : Cor do Pedido
+   version   : 1.0.0
+   vqmver    : 2.1.5
+   author    : Jeann
+
+File Name    : admin/model/sale/order.php(0)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): $sql = "SELECT o.order_id, CONCAT(o.firstname, ' ', o.lastname) AS customer, (SELECT os.name FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS status, o.total, o.currency_code, o.currency_value, o.date_added, o.date_modified FROM `" . DB_PREFIX . "order` o";
+
+----------------------------------------------------------------------
+
+
+---------- Date: 2016-12-07 07:30:36 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=sale/order&amp;token=64114404f211de06372ec23b6a92ccd4
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/corped.xml
+   id        : Cor do Pedido
+   version   : 1.0.0
+   vqmver    : 2.1.5
+   author    : Jeann
+
+File Name    : admin/model/sale/order.php(0)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): $sql = "SELECT o.order_id, CONCAT(o.firstname, ' ', o.lastname) AS customer, (SELECT os.name FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS status, o.total, o.currency_code, o.currency_value, o.date_added, o.date_modified FROM `" . DB_PREFIX . "order` o";
+
+----------------------------------------------------------------------
+
+
+---------- Date: 2016-12-07 07:31:57 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=sale/order/info&amp;token=64114404f211de06372ec23b6a92ccd4&amp;order_id=5557
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/corped.xml
+   id        : Cor do Pedido
+   version   : 1.0.0
+   vqmver    : 2.1.5
+   author    : Jeann
+
+File Name    : admin/model/sale/order.php(0)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): $sql = "SELECT o.order_id, CONCAT(o.firstname, ' ', o.lastname) AS customer, (SELECT os.name FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS status, o.total, o.currency_code, o.currency_value, o.date_added, o.date_modified FROM `" . DB_PREFIX . "order` o";
+
+----------------------------------------------------------------------
+
+
+---------- Date: 2016-12-07 07:33:11 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=sale/order/info&amp;token=64114404f211de06372ec23b6a92ccd4&amp;order_id=5557
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/corped.xml
+   id        : Cor do Pedido
+   version   : 1.0.0
+   vqmver    : 2.1.5
+   author    : Jeann
+
+File Name    : admin/model/sale/order.php(0)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): $sql = "SELECT o.order_id, CONCAT(o.firstname, ' ', o.lastname) AS customer, (SELECT os.name FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS status, o.total, o.currency_code, o.currency_value, o.date_added, o.date_modified FROM `" . DB_PREFIX . "order` o";
+
+----------------------------------------------------------------------
+
+
+---------- Date: 2016-12-07 07:36:56 ~ IP : ::1 ----------
+REQUEST URI : /saudeesabor/admin/index.php?route=sale/order/invoice&amp;token=64114404f211de06372ec23b6a92ccd4&amp;order_id=5557
+MOD DETAILS:
+   modFile   : /Applications/MAMP/htdocs/saudeesabor/vqmod/xml/deliverydateswizard.xml
+   id        : Delivery Dates Wizard
+   version   : 1.0
+   vqmver    : 2.4.1
+   author    : Musaffar Patel
+
+File Name    : admin/controller/sale/order.php(2)
+VQModObject::applyMod - SEARCH NOT FOUND (ABORTING MOD): public function invoice() {
+
+----------------------------------------------------------------------
+
+

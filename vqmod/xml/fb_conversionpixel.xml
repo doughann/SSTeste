@@ -1,0 +1,1453 @@
+<modification>
+<id>Facebook Conversion Tracking Pixels - multistore</id>
+<version>1.0.9</version>
+<vqmver>2.4.0</vqmver>
+<author>Jorim van Hove</author>
+<website>www.jorimvanhove.com</website>
+	
+	<file name="catalog/controller/checkout/cart.php">
+		<operation>
+			<search position="before" error="log"><![CDATA[$json['total']]]></search>
+			<add><![CDATA[
+			$pixels = $this->config->get('pixel');
+			
+			if (isset($pixels)) {
+				$json['pixel'] = array();
+				foreach ($pixels as $pixel) {
+					if ($pixel['category'] == 'adds_to_cart') {
+						$json['pixel_id'] = $pixel['pixel_id'];
+						$json['pixel_value'] = empty($product_info['special']) ? $product_info['price'] : $product_info['special'];
+						$json['pixel_currency'] = $this->config->get('config_currency');
+					}
+				}
+			}
+			]]></add>
+		</operation>
+	</file>
+	<file name="catalog/view/theme/*/template/product/product.tpl">
+		<operation>
+			<search position="after" error="log"><![CDATA[$('#cart-total').html(json['total']);]]></search>
+			<add><![CDATA[
+			if(json['pixel_id']) {
+				window._fbq.push(['track', '' + json['pixel_id'] + '', {'value':  json['pixel_value'] , 'currency': '' + json['pixel_currency'] + ''}]);
+			}
+			]]></add>
+		</operation>
+	</file>
+	<file name="catalog/view/theme/*/template/common/header.tpl">
+		<operation>
+			<search position="before" error="log"><![CDATA[</head>]]></search>
+			<add><![CDATA[
+			<!-- Facebook Conversion Pixel - Adds to Cart -->
+				<script>(function() {
+				  var _fbq = window._fbq || (window._fbq = []);
+				  if (!_fbq.loaded) {
+					var fbds = document.createElement('script');
+					fbds.async = true;
+					fbds.src = '//connect.facebook.net/en_US/fbds.js';
+					var s = document.getElementsByTagName('script')[0];
+					s.parentNode.insertBefore(fbds, s);
+					_fbq.loaded = true;
+				  }
+				})();
+				window._fbq = window._fbq || [];
+				</script>
+			
+			<?php if (!empty($custom_audience_pixel)) { ?>
+				<!-- Facebook Custom Audience Pixel -->
+				<script>(function() {
+				  var _fbq = window._fbq || (window._fbq = []);
+				  if (!_fbq.loaded) {
+					var fbds = document.createElement('script');
+					fbds.async = true;
+					fbds.src = '//connect.facebook.net/en_US/fbds.js';
+					var s = document.getElementsByTagName('script')[0];
+					s.parentNode.insertBefore(fbds, s);
+					_fbq.loaded = true;
+				  }
+				  _fbq.push(['addPixelId', '<?php echo $custom_audience_pixel; ?>']);
+				})();
+				window._fbq = window._fbq || [];
+				window._fbq.push(['track', 'PixelInitialized', {}]);
+				</script>
+				<noscript><img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?id=<?php echo $custom_audience_pixel; ?>&amp;ev=PixelInitialized" /></noscript>
+			<?php } ?>
+            <?php if (!empty($pixels)) { ?>				
+				<!-- Facebook Conversion Code -->
+					<script>(function() {
+					var _fbq = window._fbq || (window._fbq = []);
+					if (!_fbq.loaded) {
+					var fbds = document.createElement('script');
+					fbds.async = true;
+					fbds.src = '//connect.facebook.net/en_US/fbds.js';
+					var s = document.getElementsByTagName('script')[0];
+					s.parentNode.insertBefore(fbds, s);
+					_fbq.loaded = true;
+					}
+					})();
+					window._fbq = window._fbq || [];
+					<?php foreach ($pixels as $pixel) { ?>
+						window._fbq.push(['track', '<?php echo $pixel['pixel_id']; ?>', {'value':'<?php echo $pixel['value']; ?>','currency':'<?php echo $fb_currency; ?>'}]);
+					<?php } ?>
+					</script>
+					<?php foreach ($pixels as $pixel) { ?>
+						<noscript><img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=<?php echo $pixel['pixel_id']; ?>&amp;cd[value]=<?php echo $pixel['value']; ?>&amp;cd[currency]=<?php echo $fb_currency; ?>&amp;noscript=1" /></noscript>			
+					<?php } ?>
+			<?php }	?>
+		]]></add>
+		</operation>
+	</file>
+	<file name="catalog/controller/common/header.php">
+		<operation>
+			<search position="before" error="log"><![CDATA[$this->children = array(]]></search>
+			<add><![CDATA[
+			/* Facebook Custom Audience Pixel */
+			$this->data['custom_audience_pixel'] = $this->config->get('custom_audience_pixel');
+			
+			/* Facebook Conversion Pixel */
+			$pixels = $this->config->get('pixel');
+			
+			if (isset($_COOKIE["orderValue"])) {
+				$order_value = $_COOKIE["orderValue"];
+			} else { 
+				$order_value = "0.00";
+			}
+			
+			$this->data['fb_currency'] = $this->config->get('config_currency');
+
+			/* URL path */
+			
+			$config_url = $this->config->get('config_url');
+			
+			if(isset($this->request->get['route'])) {
+				$route = $this->request->get['route'];
+			} else {
+				$route = '';
+			}
+			
+			$this->data['route'] = $route;
+			
+			if (isset($_SERVER['HTTPS'])) {
+				$pre = 'https';
+			} else { 
+				$pre = 'http';
+			}
+			$full_url = $pre . '://' . "{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
+							
+			if ($server == $full_url) {
+				$url_path =	"home";
+			} elseif (substr($route, -7) == 'success' ) { 
+				$url_path =	$route;
+			} elseif (isset($_SERVER['HTTPS'])) {
+				$url_path = (substr(mb_strstr($_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"], '?route=', false), 8));
+			} else {
+				$url_path = (substr(mb_strstr($_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"], '?route=', false), 7));
+			}
+
+			
+			if (substr($url_path, -1) == '/') {
+				$url_path = substr($url_path, 0, -1);
+			}
+			
+			$this->data['url_path'] = $url_path;
+			
+			$p = array();
+			$i = 0;
+			
+			if (isset($pixels)) {
+				foreach ($pixels as $pixel) {
+				
+					$page_has_pixel = 0;
+					$url_prefix = '';
+				
+					if ($pixel['category'] == 'checkouts' || $pixel['category'] == 'registrations') {
+						/* Category == Checkouts or registrations */
+						if ($pixel['category'] == 'checkouts' && $pixel['path'] != 'checkout/success') {
+							$page_has_pixel = ($url_path == $pixel['path']);
+						} else {
+							$page_has_pixel = ($url_path == $pixel['path']);
+						}
+						
+					
+					} elseif (($pixel['category'] == 'key_page_views' || $pixel['category'] == 'leads' || $pixel['category'] == 'other') && $this->config->get('config_seo_url')) {
+						/* Category == Key Page Views, Leads or Other && SEO URL enabled */
+					
+						$query = $this->db->query("SELECT keyword FROM " . DB_PREFIX . "url_alias WHERE query = '" . $this->db->escape($pixel['path']) . "'");			
+				
+						if ($query->row) {
+							/* URL Alias exists */
+							$seo_url = $query->row;
+							$pixel['path'] = $seo_url['keyword'];
+						
+							$cp = $_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"];  
+							if (isset($_SERVER['HTTPS'])) {
+								$seo_path = substr($cp, (strlen($config_url)-8));
+							} else {
+								$seo_path = substr($cp, (strlen($config_url)-7));
+							}
+							$pos = strpos($seo_path, '?search=');
+							$url_explode = explode('/', ($pos !== false ? substr($seo_path, 0, -(strlen($seo_path)-$pos)) : $seo_path ));						
+							$page_has_pixel = (end($url_explode) == $pixel['path']);
+						}  elseif ($pixel['category'] == 'key_page_views') {
+							/* No URL Alias exists */
+							if ($pixel['view'] == 'category') {
+								$pixel['path'] = str_replace('category_id=', 'path=' , $pixel['path']);
+							}
+							$url_explode = explode('&', $url_path);
+							if (strpos(end($url_explode), 'search') !== false) {
+								array_pop($url_explode);
+							}
+							$page_has_pixel = (strpos(end($url_explode), $pixel['path']) !== false);
+						} else {
+							$page_has_pixel = ($url_path == $pixel['path']);
+						}	
+					
+					} elseif ($pixel['category'] == 'key_page_views' && !$this->config->get('config_seo_url')) {
+						/* Category == Key Page Views && SEO URL disabled */
+						if ($pixel['view'] == 'category') {
+							$pixel['path'] = str_replace('category_id=', 'path=' , $pixel['path']);
+						}
+						$url_explode = explode('&', $url_path);
+						if (strpos(end($url_explode), 'search') !== false) {
+							array_pop($url_explode);
+						}
+						$page_has_pixel = (strpos(end($url_explode), $pixel['path']) !== false);
+					} elseif ($pixel['category'] == 'adds_to_cart') {
+						$page_has_pixel = false;
+					} else {
+						$page_has_pixel = ($url_path == $pixel['path']);
+					}	
+				
+					if ($page_has_pixel && $pixel['status']== '1') { 
+					
+						//if ($pixel['path'] == 'checkout/success' ) {
+						//	$pixel['value'] = $order_value;
+						//}
+						
+						if ($pixel['category'] == 'checkouts' ) {
+							$pixel['value'] = $order_value;
+						}
+				
+						$p[$i] = $pixel;
+						++$i;
+					}
+				}
+				$this->data['pixels'] = $p;
+			}
+			]]></add>
+		</operation>
+	</file>
+	
+	<file name="system/library/cart.php">
+		<operation>
+			<search position="before" error="log"><![CDATA[public function countProducts() {]]></search>
+			<add><![CDATA[ 
+				public function getTotalValue($order_id) {
+					$query = $this->db->query("SELECT value FROM `" . DB_PREFIX . "order_total` WHERE `code` = 'total' AND `order_id` = '" . $order_id . "'");
+		
+					return $query->row['value'];
+				}
+  			]]></add>
+		</operation>
+	</file>
+	<file name="catalog/model/checkout/order.php">
+		<operation>
+			<search position="after" index="1"><![CDATA[
+			$order_info = $this->getOrder($order_id);
+			]]></search>
+			<add><![CDATA[
+			$order_value = $this->cart->getTotalValue($order_id);
+			if (isset($_COOKIE["orderValue"])) { 
+				setcookie("orderValue", $order_value , time()-(3600));
+				setcookie("orderValue", $order_value , time()+(60*15));
+			} else { setcookie("orderValue", $order_value , time()+(60*15));
+			}
+			]]></add>
+		</operation>
+	</file>
+	
+	<!-- Back-end implementation -->
+	
+	<!-- Main Store ($store_id == 0) START -->
+	<file name="admin/controller/setting/setting.php">
+        <operation>
+			<search position="after" error="log"><![CDATA[$this->data['tab_server'] = $this->language->get('tab_server');]]></search>
+			<add><![CDATA[$this->data['tab_facebook_pixel'] = $this->language->get('tab_facebook_pixel');]]></add>
+		</operation>
+		<operation>
+			<search position="after" error="log"><![CDATA[$this->data['entry_google_analytics'] = $this->language->get('entry_google_analytics');]]></search>
+			<add><![CDATA[
+			$this->data['entry_facebook_custom_audience'] = $this->language->get('entry_facebook_custom_audience');
+			$this->data['entry_pixel_ID'] = $this->language->get('entry_pixel_ID');
+			$this->data['entry_pixel_category'] = $this->language->get('entry_pixel_category');
+			$this->data['entry_pixel_path'] = $this->language->get('entry_pixel_path');
+			$this->data['entry_pixel_value'] = $this->language->get('entry_pixel_value');
+			$this->data['text_enabled'] = $this->language->get('text_enabled');
+			$this->data['text_disabled'] = $this->language->get('text_disabled');
+			
+			$this->data['text_order_total'] = $this->language->get('text_order_total');
+			$this->data['text_product_price'] = $this->language->get('text_product_price');
+			$this->data['text_default_success'] = $this->language->get('text_default_success');
+			$this->data['text_custom_success'] = $this->language->get('text_custom_success');
+			$this->data['text_new_customer'] = $this->language->get('text_new_customer');
+			$this->data['text_new_affiliate'] = $this->language->get('text_new_affiliate');
+			$this->data['text_product_page'] = $this->language->get('text_product_page');
+			$this->data['text_category_page'] = $this->language->get('text_category_page');
+			$this->data['text_manufacturer_page'] = $this->language->get('text_manufacturer_page');
+			$this->data['text_information_page'] = $this->language->get('text_information_page');
+			
+			$this->data['entry_status'] = $this->language->get('entry_status');
+			$this->data['entry_sort_order'] = $this->language->get('entry_sort_order');
+			
+			$this->data['button_save'] = $this->language->get('button_save');
+			$this->data['button_cancel'] = $this->language->get('button_cancel');
+			$this->data['button_add_pixel'] = $this->language->get('button_add_pixel');
+			$this->data['button_remove'] = $this->language->get('button_remove');
+			$this->data['pixel_category'] = array (
+					'checkouts' 	=> $this->language->get('entry_cat_checkouts'),
+					'registrations' => $this->language->get('entry_cat_registrations'),
+					'leads' 		=> $this->language->get('entry_cat_leads'),
+					'key_page_views' => $this->language->get('entry_cat_keypageviews'),
+					'adds_to_cart' 	=> $this->language->get('entry_cat_addstocart'),
+					'other' 		=> $this->language->get('entry_cat_other')
+			); 
+			]]></add>
+		</operation>
+		<operation>
+			<search position="before" error="log"><![CDATA[$this->template = 'setting/setting.tpl';]]></search>
+			<add><![CDATA[
+			if (isset($this->request->post['custom_audience_pixel'])) {
+			$this->data['custom_audience_pixel'] = $this->request->post['custom_audience_pixel'];
+			} elseif ($this->config->get('custom_audience_pixel')) { 
+				$this->data['custom_audience_pixel'] = $this->config->get('custom_audience_pixel');
+			} else {
+				$this->data['custom_audience_pixel'] = '';
+			}
+						
+			$this->data['pixels'] = array();
+			
+			if (isset($this->request->post['pixel'])) {
+			$this->data['pixels'] = $this->request->post['pixel'];
+			} elseif ($this->config->get('pixel')) { 
+				$this->data['pixels'] = $this->config->get('pixel');
+			}		
+			]]></add>
+		</operation>	
+	</file>
+	
+	
+	<file name="admin/view/template/setting/setting.tpl">
+			
+			<operation>
+				<search position="replace" index="6" error="log"><![CDATA[</div>]]></search>
+				<add><![CDATA[
+				<a href="#tab-facebook-pixel"><?php echo $tab_facebook_pixel; ?></a></div>
+				]]></add>
+			</operation>
+			
+			<operation>
+				<search position="before" error="log"><![CDATA[</form>]]></search>
+				<add><![CDATA[
+				<div id="tab-facebook-pixel">
+				<table class="form">
+            		<tr>
+					<td>To create Facebook Conversion Pixels navigate to <a href="https://www.facebook.com/ads/manage/" target="_blank">Facebook Ads Manager</a> -> <a href="https://www.facebook.com/ads/manage/convtrack" target="_blank">Conversion Tracking</a></td>
+					</tr>
+					<tr>
+					<td>A few pointers: 
+					<ul>
+						<li>To display a conversion pixel on the homepage (eg. yourstore.com) set <strong>Category</strong> to 'Other' and <strong>Path</strong> to <input type="text" value="home" disabled/> and make a duplicate with <strong>Path</strong> set to <input type="text" value="common/home" disabled/></li>
+						<li>To track traffic to other pages check out the documentation for more information</li>
+						<li><strong>Value</strong>: for the Facebook conversion pixel on the checkout/success page, the value will always be the Order Total. For any other conversions you can add a custom value</li>
+					</ul>
+					</td>
+					</tr>
+					<tr><td>v.1.0.10 - <a href="http://jorimvanhove.com" target="_blank">Jorim van Hove</a> © 2014 - <a href="http://jorimvanhove.com/plugins/fbcp" target="_blank">Online documentation</a> - <a href="https://www.facebook.com/help/435189689870514/" target="_blank">Facebook Help Center - Conversion Pixels section</a></td></tr>
+				</table>
+				<table class="form">
+					<tr>
+					  <td><?php echo $entry_facebook_custom_audience; ?></td>
+					  <td><input type="text" name="custom_audience_pixel" value="<?php echo $custom_audience_pixel; ?>" ></td>
+					</tr>
+				</table>
+					<table id="fcpixel" class="list">
+					  <thead>
+						<tr>
+						  <td class="left"><?php echo $entry_pixel_ID; ?></td>
+						  <td class="left"><?php echo $entry_pixel_category; ?></td>
+						  <td class="left"><?php echo $entry_pixel_path; ?></td>
+						  <td class="left"><?php echo $entry_pixel_value; ?></td>
+						  <td class="left"><?php echo $entry_status; ?></td>
+						  <td></td>
+						</tr>
+					  </thead>
+					  <?php $pixel_row = 0; ?>
+					  <?php foreach ($pixels as $pixel) { ?>
+					  <tbody id="pixel-row<?php echo $pixel_row; ?>">
+						<tr>
+						<td class="left"><input type="text" name="pixel[<?php echo $pixel_row; ?>][pixel_id]" value="<?php echo $pixel['pixel_id']; ?>" /></td>
+						<td class="left">
+						<select id="category-<?php echo $pixel_row; ?>" name="pixel[<?php echo $pixel_row; ?>][category]" onchange="setPath(<?php echo $pixel_row; ?>);">
+							<?php if ($pixel['category'] == 'checkouts') { ?>
+								<option value="<?php echo 'checkouts'; ?>" selected="selected"><?php echo $pixel_category['checkouts']; ?></option>
+							<?php } else { ?>
+								<option value="<?php echo 'checkouts'; ?>" ><?php echo $pixel_category['checkouts']; ?></option>
+							<?php } ?>
+							<?php if ($pixel['category'] == 'registrations') { ?>
+								<option value="<?php echo 'registrations'; ?>" selected="selected"><?php echo $pixel_category['registrations']; ?></option>
+							<?php } else { ?>
+								<option value="<?php echo 'registrations'; ?>" ><?php echo $pixel_category['registrations']; ?></option>
+							<?php } ?>
+							<?php if ($pixel['category'] == 'leads') { ?>
+								<option value="<?php echo 'leads'; ?>" selected="selected"><?php echo $pixel_category['leads']; ?></option>
+							<?php } else { ?>
+								<option value="<?php echo 'leads'; ?>" ><?php echo $pixel_category['leads']; ?></option>
+							<?php } ?>
+							<?php if ($pixel['category'] == 'key_page_views') { ?>
+								<option value="<?php echo 'key_page_views'; ?>"  selected="selected"><?php echo $pixel_category['key_page_views']; ?></option>
+							<?php } else { ?>
+								<option value="<?php echo 'key_page_views'; ?>" ><?php echo $pixel_category['key_page_views']; ?></option>
+							<?php } ?>	
+							<?php if ($pixel['category'] == 'adds_to_cart') { ?>
+								<option value="<?php echo 'adds_to_cart'; ?>" selected="selected"><?php echo $pixel_category['adds_to_cart']; ?></option>
+							<?php } else { ?>
+								<option value="<?php echo 'adds_to_cart'; ?>"><?php echo $pixel_category['adds_to_cart']; ?></option>
+							<?php } ?>	
+							<?php if ($pixel['category'] == 'other') { ?>
+								<option value="<?php echo 'other'; ?>" selected="selected"><?php echo $pixel_category['other']; ?></option>
+							<?php } else { ?>
+								<option value="<?php echo 'other'; ?>" ><?php echo $pixel_category['other']; ?></option>
+							<?php } ?>
+						</select>
+						<?php if (isset($pixel['view'])) { ?>
+							<div style="display:inline-block; padding-left:5px;">
+								<select id="key-page-views-<?php echo $pixel_row; ?>" name="pixel[<?php echo $pixel_row; ?>][view]" onchange="setACInputClass(<?php echo $pixel_row; ?>);" >
+								<?php if ($pixel['view'] == 'product') { ?>
+									<option value="product" selected="selected">Product Page</option>
+								<?php } else { ?>
+									<option value="product">Product Page</option>
+								<?php } ?>
+								<?php if ($pixel['view'] == 'category') { ?>
+									<option value="category" selected="selected">Category Page</option>
+								<?php } else { ?>
+									<option value="category">Category Page</option>
+								<?php } ?>
+								<?php if ($pixel['view'] == 'manufacturer') { ?>
+									<option value="manufacturer" selected="selected">Manufacturer Page</option>
+								<?php } else { ?>
+									<option value="manufacturer">Manufacturer Page</option>
+								<?php } ?>
+								<?php if ($pixel['view'] == 'information') { ?>
+									<option value="information" selected="selected">Information Page</option>
+								<?php } else { ?>
+									<option value="information">Information Page</option>
+								<?php } ?>
+								</select>
+							</div>						
+						<?php } ?>
+						</td>
+						<td class="left" id="pixel-path-input-<?php echo $pixel_row; ?>">
+							<input type="text" id="pixel-path-<?php echo $pixel_row; ?>" name="pixel[<?php echo $pixel_row; ?>][path]" value="<?php echo $pixel['path'];?>" size="40"/>
+							<?php if (isset($pixel['view-name'])) { ?>
+								<input type="hidden" id="pixel-view-name-<?php echo $pixel_row; ?>" value="<?php echo $pixel['view-name'];?>" >
+							<?php } ?>
+						</td>
+						<td class="left"><input type="text" id="pixel-value-<?php echo $pixel_row; ?>" name="pixel[<?php echo $pixel_row; ?>][value]" value="<?php echo $pixel['value']; ?>" size="10"/></td>
+						 <td class="left"><select name="pixel[<?php echo $pixel_row; ?>][status]">
+						  <?php if ($pixel['status']) { ?>
+						  <option value="1" selected="selected"><?php echo $text_enabled; ?></option>
+						  <option value="0"><?php echo $text_disabled; ?></option>
+						  <?php } else { ?>
+						  <option value="1"><?php echo $text_enabled; ?></option>
+						  <option value="0" selected="selected"><?php echo $text_disabled; ?></option>
+						  <?php } ?>
+						</select></td>
+						<td class="left"><a onclick="$('#pixel-row<?php echo $pixel_row; ?>').remove();" class="button"><?php echo $button_remove; ?></a></td>
+						</tr>
+					  </tbody>
+					  <?php $pixel_row++; ?>
+					  <?php } ?>
+				      <tfoot>
+						<tr>
+						  <td colspan="4"></td>
+						  <td class="left"><a onclick="addPixel();" class="button"><?php echo $button_add_pixel; ?></a></td>
+						</tr>
+					</tfoot>
+					</table>
+				</div>
+				]]></add>
+			</operation>
+			
+			<operation>
+				<search position="before" error="log" index="1" ><![CDATA[<?php echo $footer; ?>]]></search>
+				<add><![CDATA[
+				<script type="text/javascript"><!--
+					
+					var pixel_row = <?php echo $pixel_row; ?>;
+					
+					// Functions
+					
+					function addPixel() {	
+						html  = '<tbody id="pixel-row' + pixel_row + '">';
+						html += '  <tr>';
+						html += '    <td class="left"><input type="text" name="pixel[' + pixel_row + '][pixel_id]" value="" maxlength="13"/></td>'; 
+						html += '	 <td class="left"><select id="category-' + pixel_row + '" name="pixel[' + pixel_row + '][category]" onchange="setPath(' + pixel_row + ');">';
+						html += '	 	<option value="checkouts" ><?php echo $pixel_category['checkouts']; ?></option>';
+						html += '		<option value="registrations" ><?php echo $pixel_category['registrations']; ?></option>';
+						html += '		<option value="leads" ><?php echo $pixel_category['leads']; ?></option>';
+						html += '		<option value="key_page_views" ><?php echo $pixel_category['key_page_views']; ?></option>';
+						html += '		<option value="adds_to_cart"><?php echo $pixel_category['adds_to_cart']; ?></option>';
+						html += '		<option value="other" ><?php echo $pixel_category['other']; ?></option>';
+						html += '    </select></td>';
+						html += '	 <td class="left" id="pixel-path-input-' + pixel_row + '"><input type="text" id="pixel-path-' + pixel_row + '" name="pixel[' + pixel_row + '][path]" value="" size="40" /></td>';
+						html += '	 <td class="left"><input type="text" id="pixel-value-' + pixel_row + '" name="pixel[' + pixel_row + '][value]" value="" size="10" /></td>';
+						html += '    <td class="left"><select name="pixel[' + pixel_row + '][status]">';
+						html += '      <option value="1" selected="selected"><?php echo $text_enabled; ?></option>';
+						html += '      <option value="0"><?php echo $text_disabled; ?></option>';
+						html += '    </select></td>';
+						html += '    <td class="left"><a onclick="$(\'#pixel-row' + pixel_row + '\').remove();" class="button"><?php echo $button_remove; ?></a></td>';
+						html += '  </tr>';
+						html += '</tbody>';
+	
+						$('#fcpixel tfoot').before(html);
+						
+						$(function () {
+							setPath(pixel_row);
+						});
+						pixel_row++;
+					}
+					
+					function setPath(row) {
+						
+						var category = $('#category-' + row).val();
+						
+						resetInputs(row, category);
+						
+						if (category === 'checkouts') {
+							addCheckoutSelect(row);
+							setCheckoutPath(row);
+							$('#checkout-' + row).change();
+						}
+						
+						if (category === 'registrations') {
+							addRegSelect(row);
+							setRegistrationPath(row);
+							$('#registration-' + row).change();
+						}					
+						
+						if (category === 'leads') {
+							setLeadsPath(row);
+						}
+						
+						if (category === 'key_page_views') {
+							addPageViewsSelect(row);
+							setPageViewsPath(row);
+							$('#key-page-views-' + row).change();
+							
+						}
+						
+						if (category === 'adds_to_cart') {
+						 	setCartAddsPath(row);
+						}
+					}
+					
+					function addCheckoutSelect(row) {
+						html  = '<div style="display:inline-block; padding-left:5px;">';
+						html += '<select id="checkout-' + row + '" onchange="setCheckoutPath(' + row + ');">';
+						html += '<option value="default"><?php echo $text_default_success; ?></option> ';
+						html += '<option value="custom"><?php echo $text_custom_success; ?></option> ';
+						html += '</select></div>';
+						
+						$('#category-' + row).after(html);
+					}
+					
+					function setCheckoutPath(row) {
+						var checkoutselect = $('#checkout-' + row).val();
+						
+						if (checkoutselect === 'default') {
+							$('#pixel-path-' + row).val('checkout/success');
+							$('#pixel-path-' + row).prop('readonly', true);
+						} else {
+							$('#pixel-path-' + row).val('');
+							$('#pixel-path-' + row).prop('readonly', false);
+						}
+						
+						$('#pixel-value-' + row).val('<?php echo $text_order_total; ?>');
+						$('#pixel-value-' + row).prop('readonly', true);
+					}
+					
+					function setRegistrationPath(row) {
+						var registrationselect = $('#registration-' + row).val();
+						
+						$('#pixel-value-' + row).prop('readonly', false).val('');
+							if (registrationselect === 'account') {
+								$('#pixel-path-' + row).val('account/success');
+								$('#pixel-path-' + row).prop('readonly', true);
+								
+							} else if (registrationselect == 'affiliate') {
+								$('#pixel-path-' + row).val('affiliate/success');
+								$('#pixel-path-' + row).prop('readonly', true);
+							}		
+					}
+					
+					function addRegSelect(row) {
+						html  = '<div style="display:inline-block; padding-left:5px;">';
+						html += '<select id="registration-' + row + '" onchange="setRegistrationPath(' + row + ');">';
+						html += '<option value="account"><?php echo $text_new_customer; ?></option> ';
+						html += '<option value="affiliate"><?php echo $text_new_affiliate; ?></option> ';
+						html += '</select></div>';
+						
+						$('#category-' + row).after(html);
+					}
+					
+					function setLeadsPath(row) {
+					
+					}
+					
+					function setPageViewsPath(row) {
+						
+						
+					}
+					
+					function setCartAddsPath(row) {
+						$('#pixel-path-' + row).val('');
+						$('#pixel-path-' + row).prop('readonly', true);
+						$('#pixel-value-' + row).val('<?php echo $text_product_price; ?>');
+						$('#pixel-value-' + row).prop('readonly', true);
+					}
+					
+					function addPageViewsSelect(row) {
+						html  = '<div style="display:inline-block; padding-left:5px;">';
+						html += '<select id="key-page-views-' + row + '" name="pixel[' + row + '][view]" onchange="setACInputClass(' + row + ');" >';
+						html += '<option value="product"><?php echo $text_product_page; ?></option>';
+						html += '<option value="category"><?php echo $text_category_page; ?></option>';
+						html += '<option value="manufacturer"><?php echo $text_manufacturer_page; ?></option>';
+						html += '<option value="information"><?php echo $text_information_page; ?></option>';
+						html += '</select></div>';
+						
+						$('#category-' + row).after(html);
+						
+						replaceInput(row);
+						
+					}
+					
+					function replaceInput(row) {
+						var view = $('#key-page-views-' + row).val();
+						
+						$('#pixel-path-' + row).prop('type', 'hidden');
+						html = '<input type="text" id="autocomplete-input-' + row + '" class="autocomplete autocomplete-' + view + '" name="pixel[' +row + '][view-name]" size="40" onkeyup="autocompleteInput(' + row + ', \'' + view + '\');"/>';
+						$('#pixel-path-input-' + row).append(html);
+						
+					}
+					
+					function setACInputClass(row) {
+						var view = $('#key-page-views-' + row).val();
+						$('#autocomplete-input-' + row).replaceWith('<input type="text" id="autocomplete-input-' + row + '" class="autocomplete autocomplete-' + view + '" name="pixel[' +row + '][view-name]" size="40" onkeyup="autocompleteInput(' + row + ', \'' + view + '\');"/>');
+					}
+					
+					function initRows(row) {
+						var category = $('#category-' + row).val();
+						
+						if (category === 'checkouts') {
+							initCheckoutPath(row);
+						}
+						
+						if (category === 'registrations') {
+							initRegPath(row);
+						}
+						
+						if (category === 'key_page_views') {
+							initPageViewsPath(row);
+						}
+						if (category === 'adds_to_cart') {
+							setCartAddsPath(row);
+						}
+					}
+					
+					function initCheckoutPath(row) {
+						addCheckoutSelect(row);
+						if ($('#pixel-path-' + row).val() === 'checkout/success') {
+							$('#checkout-' + row).val('default');
+							$('#pixel-path-' + row).prop('readonly', true);
+						}
+						if ($('#pixel-path-' + row).val() !== 'checkout/success') {
+							$('#checkout-' + row).val('custom');
+							$('#pixel-path-' + row).prop('readonly', false);
+						}
+						
+						$('#pixel-value-' + row).prop('readonly', true);
+						
+					} 
+					
+					function initRegPath(row) {
+						addRegSelect(row);
+						$('#pixel-path-' + row).prop('readonly', true);
+						if ($('#pixel-path-' + row).val() === 'account/success') {
+							$('#registration-' + row).val('account');
+						}
+						if ($('#pixel-path-' + row).val() === 'affiliate/success') {
+							$('#registration-' + row).val('affiliate');
+						}
+						
+					}
+					
+					function initPageViewsPath(row) {
+						replaceInput(row);
+						$('#autocomplete-input-' + row).val($('#pixel-view-name-' + row).val());	
+					}
+					
+					function resetInputs(row, category) {
+						
+						if (category != 'checkouts') {
+							$('#checkout-' + row).remove();
+						}
+						
+						if (category != 'registrations') {
+							$('#registration-' + row).remove();
+						}
+						
+						if (category != 'key_page_views') {
+							$('#key-page-views-' + row).remove();
+						}
+						
+						$('#pixel-value-' + row).prop('readonly', false).val('');
+						$('#pixel-path-' + row).prop('readonly', false).removeClass().val('');
+						
+						$('#pixel-path-' + row).prop('type', 'text');
+						$('#autocomplete-input-' + row).remove();
+					}
+					
+					function autocompleteInput(row, view) {
+						
+						$('.autocomplete-' + view).autocomplete({
+							delay: 300,
+							source: function(request, response) {
+								$.ajax({
+									url: 'index.php?route=catalog/product/autocompleteView&token=<?php echo $token; ?>&filter_name=' + encodeURIComponent(request.term) + '&view=' + view,
+									dataType: 'json',
+									success: function(json) {	
+										response($.map(json, function(item) {
+											return {
+												label: item.name,
+												value: item.id
+											}
+										}));
+									}
+								});
+							}, 
+							select: function(event, ui) {
+								$('#autocomplete-input-' + row).attr('value', ui.item['label']);
+								$('#pixel-path-' + row).attr('value', getURLPrefix(view) + ui.item['value']);
+								return false;
+							},
+							
+							focus: function(event, ui) {
+								return false;
+							},
+							minLength: 3
+						});
+					
+					}
+					
+					function getURLPrefix(view) {
+						
+						if (view === 'product') {
+							return 'product_id=';
+						} else if (view === 'category') {
+							return 'category_id=';
+						} else if (view === 'manufacturer') {
+							return 'manufacturer_id=';
+						} else if (view === 'information') {
+							return 'information_id=';
+						}
+					
+					}		
+					
+					// Document Ready
+					
+					$(function () {
+						var pixels = <?php echo $pixel_row; ?>;
+						for (i = 0; i < pixels; i++) {
+							initRows(i);
+						}
+					});					
+
+					//--></script>
+					]]></add>
+			</operation>
+			
+	</file>
+			
+	<file name="admin/language/*/setting/setting.php">
+		<operation>
+		<search position="before" error="log"><![CDATA[?>]]></search>
+				<add><![CDATA[
+				$_['tab_facebook_pixel']        = 'Facebook Conversion Pixel(s)';
+				$_['entry_facebook_custom_audience'] = 'Facebook Custom Audience Pixel code:<br /><span class="help">Login to your <a href="https://www.facebook.com/ads/manage/audiences.php" target="_blank"><u>Facebook Ads Management</u></a> account and select \'Audiences\', then choose \'Create Custom Audience\' and click on \'Custom Audience from your website\'. Paste the Custom Audience Pixel ID into this field.</span>';
+				$_['entry_pixel_ID']            = 'Facebook Conversion Pixel ID';
+				$_['button_add_pixel']		 	= 'Add Conversion Pixel';
+				$_['entry_pixel_category']		= 'Conversion Pixel Category:';
+				$_['entry_pixel_path']			= 'Path:';
+				$_['entry_pixel_value']			= 'Value:';
+				$_['entry_cat_checkouts'] 		= 'Checkouts';
+				$_['entry_cat_registrations'] 	= 'Registrations';
+				$_['entry_cat_leads'] 			= 'Leads';
+				$_['entry_cat_keypageviews'] 	= 'Key Page Views';
+				$_['entry_cat_addstocart'] 		= 'Adds To Cart';
+				$_['entry_cat_other'] 			= 'Other';
+				$_['entry_status']        		= 'Status:';
+				
+				$_['text_order_total'] 			= 'Order Total';
+				$_['text_product_price'] 		= 'Prod. Price';
+				$_['text_default_success'] 		= 'Default Success Page';
+				$_['text_custom_success'] 		= 'Custom Success Page';
+				$_['text_new_customer'] 		= 'New Customer';
+				$_['text_new_affiliate'] 		= 'New Affiliate';
+				$_['text_product_page']			= 'Product Page';
+				$_['text_category_page'] 		= 'Category Page';
+				$_['text_manufacturer_page'] 	= 'Manufacturer Page';
+				$_['text_information_page']		= 'Information Page';
+				
+				]]></add>
+		</operation>
+	</file>
+	<!-- Main Store ($store_id == 0) END -->
+	
+	<!-- Sub-stores ($store_id != 0) START-->
+	<file name="admin/controller/setting/store.php">
+		<operation>
+			<search position="after" error="log"><![CDATA[$this->data['tab_server'] = $this->language->get('tab_server');]]></search>
+			<add><![CDATA[$this->data['tab_facebook_pixel'] = $this->language->get('tab_facebook_pixel');]]></add>
+		</operation>
+		<operation>
+			<search position="after" error="log"><![CDATA[$this->data['entry_secure'] = $this->language->get('entry_secure');]]></search>
+			<add><![CDATA[
+			$this->data['entry_facebook_custom_audience'] = $this->language->get('entry_facebook_custom_audience');
+			$this->data['entry_pixel_ID'] = $this->language->get('entry_pixel_ID');
+			$this->data['entry_pixel_category'] = $this->language->get('entry_pixel_category');
+			$this->data['entry_pixel_path'] = $this->language->get('entry_pixel_path');
+			$this->data['entry_pixel_value'] = $this->language->get('entry_pixel_value');
+			$this->data['text_enabled'] = $this->language->get('text_enabled');
+			$this->data['text_disabled'] = $this->language->get('text_disabled');
+			
+			$this->data['text_order_total'] = $this->language->get('text_order_total');
+			$this->data['text_product_price'] = $this->language->get('text_product_price');
+			$this->data['text_default_success'] = $this->language->get('text_default_success');
+			$this->data['text_custom_success'] = $this->language->get('text_custom_success');
+			$this->data['text_new_customer'] = $this->language->get('text_new_customer');
+			$this->data['text_new_affiliate'] = $this->language->get('text_new_affiliate');
+			$this->data['text_product_page'] = $this->language->get('text_product_page');
+			$this->data['text_category_page'] = $this->language->get('text_category_page');
+			$this->data['text_manufacturer_page'] = $this->language->get('text_manufacturer_page');
+			$this->data['text_information_page'] = $this->language->get('text_information_page');
+			
+			$this->data['entry_status'] = $this->language->get('entry_status');
+			$this->data['entry_sort_order'] = $this->language->get('entry_sort_order');
+			
+			$this->data['button_save'] = $this->language->get('button_save');
+			$this->data['button_cancel'] = $this->language->get('button_cancel');
+			$this->data['button_add_pixel'] = $this->language->get('button_add_pixel');
+			$this->data['button_remove'] = $this->language->get('button_remove');
+			$this->data['pixel_category'] = array (
+					'checkouts' 	=> $this->language->get('entry_cat_checkouts'),
+					'registrations' => $this->language->get('entry_cat_registrations'),
+					'leads' 		=> $this->language->get('entry_cat_leads'),
+					'key_page_views' => $this->language->get('entry_cat_keypageviews'),
+					'adds_to_cart' 	=> $this->language->get('entry_cat_addstocart'),
+					'other' 		=> $this->language->get('entry_cat_other')
+			); ]]></add>
+		</operation>
+		<operation>
+			<search position="before" error="log"><![CDATA[$this->template = 'setting/store_form.tpl';]]></search>
+			<add><![CDATA[
+			
+			if (isset($this->request->post['custom_audience_pixel'])) {
+			$this->data['custom_audience_pixel'] = $this->request->post['custom_audience_pixel'];
+			} elseif (isset($store_info['custom_audience_pixel'])) { 
+				$this->data['custom_audience_pixel'] = $store_info['custom_audience_pixel'];
+			} else {
+				$this->data['custom_audience_pixel'] = '';
+			}
+						
+			$this->data['pixels'] = array();
+			
+			if (isset($this->request->post['pixel'])) {
+			$this->data['pixels'] = $this->request->post['pixel'];
+			} elseif (isset($store_info['pixel'])) { 
+				$this->data['pixels'] = $store_info['pixel'];
+			}	
+				
+			]]></add>
+		</operation>	
+	</file>
+	<file name="admin/view/template/setting/store_form.tpl">
+			<operation>
+				<search position="replace" index="6" error="log"><![CDATA[</div>]]></search>
+				<add><![CDATA[
+				<a href="#tab-facebook-pixel"><?php echo $tab_facebook_pixel; ?></a></div>
+				]]></add>
+			</operation>
+			<operation>
+				<search position="before" error="log"><![CDATA[</form>]]></search>
+				<add><![CDATA[
+				<div id="tab-facebook-pixel">
+				<table class="form">
+            		<tr>
+					<td>To create Facebook Conversion Pixels navigate to <a href="https://www.facebook.com/ads/manage/" target="_blank">Facebook Ads Manager</a> -> <a href="https://www.facebook.com/ads/manage/convtrack" target="_blank">Conversion Tracking</a></td>
+					</tr>
+					<tr>
+					<td>A few pointers: 
+					<ul>
+						<li>To display a conversion pixel on the homepage (eg. yourstore.com) set <strong>Category</strong> to 'Other' and <strong>Path</strong> to <input type="text" value="home" disabled/> and make a duplicate with <strong>Path</strong> set to <input type="text" value="common/home" disabled/></li>
+						<li>To track traffic to other pages check out the documentation for more information</li>
+						<li><strong>Value</strong>: for the Facebook conversion pixel on the checkout/success page, the value will always be the Order Total. For any other conversions you can add a custom value</li>
+					</ul>
+					</td>
+					</tr>
+					<tr><td>v.1.0.10 - <a href="http://jorimvanhove.com" target="_blank">Jorim van Hove</a> © 2014 - <a href="http://jorimvanhove.com/plugins/fbcp" target="_blank">Online documentation</a> - <a href="https://www.facebook.com/help/435189689870514/" target="_blank">Facebook Help Center - Conversion Pixels section</a></td></tr>
+				</table>
+				<table class="form">
+					<tr>
+					  <td><?php echo $entry_facebook_custom_audience; ?></td>
+					  <td><input type="text" name="custom_audience_pixel" value="<?php echo $custom_audience_pixel; ?>" ></td>
+					</tr>
+				</table>
+					<table id="fcpixel" class="list">
+					  <thead>
+						<tr>
+						  <td class="left"><?php echo $entry_pixel_ID; ?></td>
+						  <td class="left"><?php echo $entry_pixel_category; ?></td>
+						  <td class="left"><?php echo $entry_pixel_path; ?></td>
+						  <td class="left"><?php echo $entry_pixel_value; ?></td>
+						  <td class="left"><?php echo $entry_status; ?></td>
+						  <td></td>
+						</tr>
+					  </thead>
+					  <?php $pixel_row = 0; ?>
+					  <?php foreach ($pixels as $pixel) { ?>
+					  <tbody id="pixel-row<?php echo $pixel_row; ?>">
+						<tr>
+						<td class="left"><input type="text" name="pixel[<?php echo $pixel_row; ?>][pixel_id]" value="<?php echo $pixel['pixel_id']; ?>" /></td>
+						<td class="left"><select id="category<?php echo $pixel_row; ?>" name="pixel[<?php echo $pixel_row; ?>][category]">
+							<?php if ($pixel['category'] == 'checkouts') { ?>
+								<option value="<?php echo 'checkouts'; ?>" selected="selected"><?php echo $pixel_category['checkouts']; ?></option>
+							<?php } else { ?>
+								<option value="<?php echo 'checkouts'; ?>" ><?php echo $pixel_category['checkouts']; ?></option>
+							<?php } ?>
+							<?php if ($pixel['category'] == 'registrations') { ?>
+								<option value="<?php echo 'registrations'; ?>" selected="selected"><?php echo $pixel_category['registrations']; ?></option>
+							<?php } else { ?>
+								<option value="<?php echo 'registrations'; ?>" ><?php echo $pixel_category['registrations']; ?></option>
+							<?php } ?>
+							<?php if ($pixel['category'] == 'leads') { ?>
+								<option value="<?php echo 'leads'; ?>" selected="selected"><?php echo $pixel_category['leads']; ?></option>
+							<?php } else { ?>
+								<option value="<?php echo 'leads'; ?>" ><?php echo $pixel_category['leads']; ?></option>
+							<?php } ?>
+							<?php if ($pixel['category'] == 'key_page_views') { ?>
+								<option value="<?php echo 'key_page_views'; ?>"  selected="selected"><?php echo $pixel_category['key_page_views']; ?></option>
+							<?php } else { ?>
+								<option value="<?php echo 'key_page_views'; ?>" ><?php echo $pixel_category['key_page_views']; ?></option>
+							<?php } ?>	
+							<?php if ($pixel['category'] == 'adds_to_cart') { ?>
+								<option value="<?php echo 'adds_to_cart'; ?>" selected="selected"><?php echo $pixel_category['adds_to_cart']; ?></option>
+							<?php } else { ?>
+								<option value="<?php echo 'adds_to_cart'; ?>" ><?php echo $pixel_category['adds_to_cart']; ?></option>
+							<?php } ?>	
+							<?php if ($pixel['category'] == 'other') { ?>
+								<option value="<?php echo 'other'; ?>" ><?php echo $pixel_category['other']; ?></option>
+							<?php } else { ?>
+								<option value="<?php echo 'other'; ?>" ><?php echo $pixel_category['other']; ?></option>
+							<?php } ?>	
+						</select>
+						<?php if (isset($pixel['view'])) { ?>
+							<div style="display:inline-block; padding-left:5px;">
+								<select id="key-page-views-<?php echo $pixel_row; ?>" name="pixel[<?php echo $pixel_row; ?>][view]" onchange="setACInputClass(<?php echo $pixel_row; ?>);" >
+								<?php if ($pixel['view'] == 'product') { ?>
+									<option value="product" selected="selected">Product Page</option>
+								<?php } else { ?>
+									<option value="product">Product Page</option>
+								<?php } ?>
+								<?php if ($pixel['view'] == 'category') { ?>
+									<option value="category" selected="selected">Category Page</option>
+								<?php } else { ?>
+									<option value="category">Category Page</option>
+								<?php } ?>
+								<?php if ($pixel['view'] == 'manufacturer') { ?>
+									<option value="manufacturer" selected="selected">Manufacturer Page</option>
+								<?php } else { ?>
+									<option value="manufacturer">Manufacturer Page</option>
+								<?php } ?>
+								<?php if ($pixel['view'] == 'information') { ?>
+									<option value="information" selected="selected">Information Page</option>
+								<?php } else { ?>
+									<option value="information">Information Page</option>
+								<?php } ?>
+								</select>
+							</div>						
+						<?php } ?>
+						</td>
+						<td class="left"><input type="url" name="pixel[<?php echo $pixel_row; ?>][path]" value="<?php echo $pixel['path']; ?>" size="40"/></td>
+						<td class="left"><input type="text" name="pixel[<?php echo $pixel_row; ?>][value]" value="<?php echo $pixel['value']; ?>" size="10"/></td>
+						 <td class="left"><select name="pixel[<?php echo $pixel_row; ?>][status]">
+						  <?php if ($pixel['status']) { ?>
+						  <option value="1" selected="selected"><?php echo $text_enabled; ?></option>
+						  <option value="0"><?php echo $text_disabled; ?></option>
+						  <?php } else { ?>
+						  <option value="1"><?php echo $text_enabled; ?></option>
+						  <option value="0" selected="selected"><?php echo $text_disabled; ?></option>
+						  <?php } ?>
+						</select></td>
+						<td class="left"><a onclick="$('#pixel-row<?php echo $pixel_row; ?>').remove();" class="button"><?php echo $button_remove; ?></a></td>
+						</tr>
+					  </tbody>
+					  <?php $pixel_row++; ?>
+					  <?php } ?>
+				      <tfoot>
+						<tr>
+						  <td colspan="4"></td>
+						  <td class="left"><a onclick="addPixel();" class="button"><?php echo $button_add_pixel; ?></a></td>
+						</tr>
+					</tfoot>
+					</table>
+				</div>
+				]]></add>
+			</operation>
+			<operation>
+				<search position="before" error="log" index="1" ><![CDATA[<?php echo $footer; ?>]]></search>
+				<add><![CDATA[
+					<script type="text/javascript"><!--
+					
+					var pixel_row = <?php echo $pixel_row; ?>;
+					
+					// Functions
+					
+					function addPixel() {	
+						html  = '<tbody id="pixel-row' + pixel_row + '">';
+						html += '  <tr>';
+						html += '    <td class="left"><input type="text" name="pixel[' + pixel_row + '][pixel_id]" value="" maxlength="13"/></td>'; 
+						html += '	 <td class="left"><select id="category-' + pixel_row + '" name="pixel[' + pixel_row + '][category]" onchange="setPath(' + pixel_row + ');">';
+						html += '	 	<option value="checkouts" ><?php echo $pixel_category['checkouts']; ?></option>';
+						html += '		<option value="registrations" ><?php echo $pixel_category['registrations']; ?></option>';
+						html += '		<option value="leads" ><?php echo $pixel_category['leads']; ?></option>';
+						html += '		<option value="key_page_views" ><?php echo $pixel_category['key_page_views']; ?></option>';
+						html += '		<option value="adds_to_cart"><?php echo $pixel_category['adds_to_cart']; ?></option>';
+						html += '		<option value="other" ><?php echo $pixel_category['other']; ?></option>';
+						html += '    </select></td>';
+						html += '	 <td class="left" id="pixel-path-input-' + pixel_row + '"><input type="text" id="pixel-path-' + pixel_row + '" name="pixel[' + pixel_row + '][path]" value="" size="40" /></td>';
+						html += '	 <td class="left"><input type="text" id="pixel-value-' + pixel_row + '" name="pixel[' + pixel_row + '][value]" value="" size="10" /></td>';
+						html += '    <td class="left"><select name="pixel[' + pixel_row + '][status]">';
+						html += '      <option value="1" selected="selected"><?php echo $text_enabled; ?></option>';
+						html += '      <option value="0"><?php echo $text_disabled; ?></option>';
+						html += '    </select></td>';
+						html += '    <td class="left"><a onclick="$(\'#pixel-row' + pixel_row + '\').remove();" class="button"><?php echo $button_remove; ?></a></td>';
+						html += '  </tr>';
+						html += '</tbody>';
+	
+						$('#fcpixel tfoot').before(html);
+						
+						$(function () {
+							setPath(pixel_row);
+						});
+						pixel_row++;
+					}
+					
+					function setPath(row) {
+						
+						var category = $('#category-' + row).val();
+						
+						resetInputs(row, category);
+						
+						if (category === 'checkouts') {
+							addCheckoutSelect(row);
+							setCheckoutPath(row);
+							$('#checkout-' + row).change();
+						}
+						
+						if (category === 'registrations') {
+							addRegSelect(row);
+							setRegistrationPath(row);
+							$('#registration-' + row).change();
+						}					
+						
+						if (category === 'leads') {
+							setLeadsPath(row);
+						}
+						
+						if (category === 'key_page_views') {
+							addPageViewsSelect(row);
+							setPageViewsPath(row);
+							$('#key-page-views-' + row).change();
+							
+						}
+						
+						if (category === 'adds_to_cart') {
+						 	setCartAddsPath(row);
+						}
+					}
+					
+					function addCheckoutSelect(row) {
+						html  = '<div style="display:inline-block; padding-left:5px;">';
+						html += '<select id="checkout-' + row + '" onchange="setCheckoutPath(' + row + ');">';
+						html += '<option value="default"><?php echo $text_default_success; ?></option> ';
+						html += '<option value="custom"><?php echo $text_custom_success; ?></option> ';
+						html += '</select></div>';
+						
+						$('#category-' + row).after(html);
+					}
+					
+					function setCheckoutPath(row) {
+						var checkoutselect = $('#checkout-' + row).val();
+						
+						if (checkoutselect === 'default') {
+							$('#pixel-path-' + row).val('checkout/success');
+							$('#pixel-path-' + row).prop('readonly', true);
+						} else {
+							$('#pixel-path-' + row).val('');
+							$('#pixel-path-' + row).prop('readonly', false);
+						}
+						
+						$('#pixel-value-' + row).val('<?php echo $text_order_total; ?>');
+						$('#pixel-value-' + row).prop('readonly', true);
+					}
+					
+					function setRegistrationPath(row) {
+						var registrationselect = $('#registration-' + row).val();
+						
+						$('#pixel-value-' + row).prop('readonly', false).val('');
+							if (registrationselect === 'account') {
+								$('#pixel-path-' + row).val('account/success');
+								$('#pixel-path-' + row).prop('readonly', true);
+								
+							} else if (registrationselect == 'affiliate') {
+								$('#pixel-path-' + row).val('affiliate/success');
+								$('#pixel-path-' + row).prop('readonly', true);
+							}		
+					}
+					
+					function addRegSelect(row) {
+						html  = '<div style="display:inline-block; padding-left:5px;">';
+						html += '<select id="registration-' + row + '" onchange="setRegistrationPath(' + row + ');">';
+						html += '<option value="account"><?php echo $text_new_customer; ?></option> ';
+						html += '<option value="affiliate"><?php echo $text_new_affiliate; ?></option> ';
+						html += '</select></div>';
+						
+						$('#category-' + row).after(html);
+					}
+					
+					function setLeadsPath(row) {
+					
+					}
+					
+					function setPageViewsPath(row) {
+						
+						
+					}
+					
+					function setCartAddsPath(row) {
+						$('#pixel-path-' + row).val('');
+						$('#pixel-path-' + row).prop('readonly', true);
+						$('#pixel-value-' + row).val('<?php echo $text_product_price; ?>');
+						$('#pixel-value-' + row).prop('readonly', true);
+					}
+					
+					function addPageViewsSelect(row) {
+						html  = '<div style="display:inline-block; padding-left:5px;">';
+						html += '<select id="key-page-views-' + row + '" name="pixel[' + row + '][view]" onchange="setACInputClass(' + row + ');" >';
+						html += '<option value="product"><?php echo $text_product_page; ?></option>';
+						html += '<option value="category"><?php echo $text_category_page; ?></option>';
+						html += '<option value="manufacturer"><?php echo $text_manufacturer_page; ?></option>';
+						html += '<option value="information"><?php echo $text_information_page; ?></option>';
+						html += '</select></div>';
+						
+						$('#category-' + row).after(html);
+						
+						replaceInput(row);
+						
+					}
+					
+					function replaceInput(row) {
+						var view = $('#key-page-views-' + row).val();
+						
+						$('#pixel-path-' + row).prop('type', 'hidden');
+						html = '<input type="text" id="autocomplete-input-' + row + '" class="autocomplete autocomplete-' + view + '" name="pixel[' +row + '][view-name]" size="40" onkeyup="autocompleteInput(' + row + ', \'' + view + '\');"/>';
+						$('#pixel-path-input-' + row).append(html);
+						
+					}
+					
+					function setACInputClass(row) {
+						var view = $('#key-page-views-' + row).val();
+						$('#autocomplete-input-' + row).replaceWith('<input type="text" id="autocomplete-input-' + row + '" class="autocomplete autocomplete-' + view + '" name="pixel[' +row + '][view-name]" size="40" onkeyup="autocompleteInput(' + row + ', \'' + view + '\');"/>');
+					}
+					
+					function initRows(row) {
+						var category = $('#category-' + row).val();
+						
+						if (category === 'checkouts') {
+							initCheckoutPath(row);
+						}
+						
+						if (category === 'registrations') {
+							initRegPath(row);
+						}
+						
+						if (category === 'key_page_views') {
+							initPageViewsPath(row);
+						}
+						if (category === 'adds_to_cart') {
+							setCartAddsPath(row);
+						}
+					}
+					
+					function initCheckoutPath(row) {
+						addCheckoutSelect(row);
+						if ($('#pixel-path-' + row).val() === 'checkout/success') {
+							$('#checkout-' + row).val('default');
+							$('#pixel-path-' + row).prop('readonly', true);
+						}
+						if ($('#pixel-path-' + row).val() !== 'checkout/success') {
+							$('#checkout-' + row).val('custom');
+							$('#pixel-path-' + row).prop('readonly', false);
+						}
+						
+						$('#pixel-value-' + row).prop('readonly', true);
+						
+					} 
+					
+					function initRegPath(row) {
+						addRegSelect(row);
+						if ($('#pixel-path-' + row).val() === 'account/success') {
+							$('#registration-' + row).val('account');
+						}
+						if ($('#pixel-path-' + row).val() === 'affiliate/success') {
+							$('#registration-' + row).val('affiliate');
+						}
+						
+					}
+					
+					function initPageViewsPath(row) {
+						replaceInput(row);
+						$('#autocomplete-input-' + row).val($('#pixel-view-name-' + row).val());	
+					}
+					
+					function resetInputs(row, category) {
+						
+						if (category != 'checkouts') {
+							$('#checkout-' + row).remove();
+						}
+						
+						if (category != 'registrations') {
+							$('#registration-' + row).remove();
+						}
+						
+						if (category != 'key_page_views') {
+							$('#key-page-views-' + row).remove();
+						}
+						
+						$('#pixel-value-' + row).prop('readonly', false).val('');
+						$('#pixel-path-' + row).prop('readonly', false).removeClass().val('');
+						
+						$('#pixel-path-' + row).prop('type', 'text');
+						$('#autocomplete-input-' + row).remove();
+					}
+					
+					function autocompleteInput(row, view) {
+						
+						$('.autocomplete-' + view).autocomplete({
+							delay: 300,
+							source: function(request, response) {
+								$.ajax({
+									url: 'index.php?route=catalog/product/autocompleteView&token=<?php echo $token; ?>&filter_name=' + encodeURIComponent(request.term) + '&view=' + view,
+									dataType: 'json',
+									success: function(json) {	
+										response($.map(json, function(item) {
+											return {
+												label: item.name,
+												value: item.id
+											}
+										}));
+									}
+								});
+							}, 
+							select: function(event, ui) {
+								$('#autocomplete-input-' + view ).attr('value', ui.item['label']);
+								$('#pixel-path-' + row).attr('value', getURLPrefix(view) + ui.item['value']);
+								return false;
+							},
+							
+							focus: function(event, ui) {
+								return false;
+							},
+							minLength: 3
+						});
+					
+					}
+					
+					function getURLPrefix(view) {
+						
+						if (view === 'product') {
+							return 'product_id=';
+						} else if (view === 'category') {
+							return 'category_id=';
+						} else if (view === 'manufacturer') {
+							return 'manufacturer_id=';
+						} else if (view === 'information') {
+							return 'information_id=';
+						}
+					
+					}
+					
+					// Document Ready
+					
+					$(function () {
+						var pixels = <?php echo $pixel_row; ?>;
+						for (i = 0; i < pixels; i++) {
+							initRows(i);
+						}
+					});					
+
+					//--></script>
+					]]></add>
+			</operation>	
+	</file>
+
+	<file name="admin/language/*/setting/store.php">
+		<operation>
+		<search position="before" error="log"><![CDATA[?>]]></search>
+				<add><![CDATA[
+				$_['tab_facebook_pixel']        = 'Facebook Conversion Pixel(s)';
+				$_['entry_facebook_custom_audience'] = 'Facebook Custom Audience Pixel code:<br /><span class="help">Login to your <a href="https://www.facebook.com/ads/manage/audiences.php" target="_blank"><u>Facebook Ads Management</u></a> account and select \'Audiences\', then choose \'Create Custom Audience\' and click on \'Custom Audience from your website\'. Paste the Custom Audience Pixel ID into this field.</span>';
+				$_['entry_pixel_ID']            = 'Facebook Conversion Pixel ID';
+				$_['button_add_pixel']		 	= 'Add Conversion Pixel';
+				$_['entry_pixel_category']		= 'Conversion Pixel Category:';
+				$_['entry_pixel_path']			= 'Path:';
+				$_['entry_pixel_value']			= 'Value:';
+				$_['entry_cat_checkouts'] 		= 'Checkouts';
+				$_['entry_cat_registrations'] 	= 'Registrations';
+				$_['entry_cat_leads'] 			= 'Leads';
+				$_['entry_cat_keypageviews'] 	= 'Key Page Views';
+				$_['entry_cat_addstocart'] 		= 'Adds To Cart';
+				$_['entry_cat_other'] 			= 'Other';
+				$_['entry_status']        		= 'Status:';
+				
+				$_['text_order_total'] 			= 'Order Total';
+				$_['text_product_price'] 		= 'Cart Total';
+				$_['text_default_success'] 		= 'Default Success Page';
+				$_['text_custom_success'] 		= 'Custom Success Page';
+				$_['text_new_customer'] 		= 'New Customer';
+				$_['text_new_affiliate'] 		= 'New Affiliate';
+				$_['text_product_page']			= 'Product Page';
+				$_['text_category_page'] 		= 'Category Page';
+				$_['text_manufacturer_page'] 	= 'Manufacturer Page';
+				$_['text_information_page']		= 'Information Page';
+				
+				]]></add>
+		</operation>
+	</file>
+	<!-- Sub-stores ($store_id != 0) END-->
+	
+	<file name="admin/controller/catalog/product.php">
+		<operation>
+		<search position="before" error="log"><![CDATA[public function autocomplete() {]]></search>
+		<add><![CDATA[
+		public function autocompleteView() {
+			
+			$view = $this->request->get['view'];
+			
+			switch ($view) {
+				case 'product': 
+					$json = $this->getAutocompleteData($view, 0);
+					break;
+				case 'category':
+					$json = $this->getAutocompleteData($view, 1);
+					break;
+				case 'manufacturer':
+					$json =  $this->getAutocompleteData($view, 2);
+					break;	
+				case 'information':
+					$json =  $this->getAutocompleteData($view, 3);
+					break;
+			}
+
+		 $this->response->setOutput(json_encode($json));
+		 
+		}
+		
+		protected function getAutocompleteData($view, $switch) {
+			
+			$json = array();
+			
+			if (isset($this->request->get['filter_name']) || isset($this->request->get['filter_model'])) {
+				$this->load->model('catalog/' . $view);
+
+				if (isset($this->request->get['filter_name'])) {
+					$filter_name = $this->request->get['filter_name'];
+				} else {
+					$filter_name = '';
+				}
+
+				if (isset($this->request->get['filter_model'])) {
+					$filter_model = $this->request->get['filter_model'];
+				} else {
+					$filter_model = '';
+				}
+
+				if (isset($this->request->get['limit'])) {
+					$limit = $this->request->get['limit'];	
+				} else {
+					$limit = 20;	
+				}			
+
+				$data = array(
+					'filter_name'  => $filter_name,
+					'filter_model' => $filter_model,
+					'start'        => 0,
+					'limit'        => $limit
+				);
+				
+				switch ($switch) {
+					case 0: 
+						$results = $this->model_catalog_product->getProducts($data);
+						break;
+					case 1: 
+						$results = $this->model_catalog_category->getCategories($data);
+						break;
+					case 2: 
+						$results = $this->model_catalog_manufacturer->getManufacturers($data);
+						break;
+					case 3: 
+						$results = $this->model_catalog_information->getInformations($data);
+						break;
+				}
+				
+				
+		
+				foreach ($results as $result) {
+				
+					$json[] = array(
+						'id' 	=> $result[$view . '_id'],
+						'name'  => strip_tags(html_entity_decode(($switch == 3 ? $result['title'] : $result['name']), ENT_QUOTES, 'UTF-8'))
+					);	
+				}
+			}
+
+		return $json;
+				
+		}
+		
+		]]></add>
+	</operation>
+	</file>
+	
+	<file name="admin/model/catalog/information.php">
+		<operation>
+		<search position="before" error="log"><![CDATA[if (isset($data['sort']) && in_array($data['sort'], $sort_data)) {]]></search>
+		<add><![CDATA[
+			if (!empty($data['filter_name'])) {
+				$sql .= " AND id.title LIKE '" . $this->db->escape($data['filter_name']) . "%'";
+			}
+		]]></add>
+	</operation>
+	</file>
+	
+</modification>
