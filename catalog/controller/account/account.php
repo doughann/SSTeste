@@ -6,7 +6,7 @@ class ControllerAccountAccount extends Controller {
 
 			$this->redirect($this->url->link('account/login', '', 'SSL'));
 		}
-    //// Teste versão 2
+    //// Teste versão 2 /
 		$this->language->load('account/account');
 
 		$this->document->setTitle($this->language->get('heading_title'));
