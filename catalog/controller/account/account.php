@@ -1,12 +1,12 @@
-<?php 
-class ControllerAccountAccount extends Controller { 
+<?php
+class ControllerAccountAccount extends Controller {
 	public function index() {
 		if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/account', '', 'SSL');
 
 			$this->redirect($this->url->link('account/login', '', 'SSL'));
 		}
-
+    //// Teste versão 2 /
 		$this->language->load('account/account');
 
 		$this->document->setTitle($this->language->get('heading_title'));
@@ -79,7 +79,7 @@ class ControllerAccountAccount extends Controller {
 			'common/content_top',
 			'common/content_bottom',
 			'common/footer',
-			'common/header'		
+			'common/header'
 		);
 
 		$this->response->setOutput($this->render());
